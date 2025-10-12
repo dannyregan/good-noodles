@@ -32,6 +32,7 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
         tabBarActiveTintColor: 'black',
         tabBarInactiveTintColor: 'gray',
+        headerShown: false,
       }}
     >
       <Tabs.Screen
