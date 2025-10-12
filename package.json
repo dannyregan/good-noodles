@@ -1,7 +1,7 @@
 {
   "name": "expo-user-management",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -9,10 +9,21 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@rneui/base": "^4.0.0-rc.8",
+    "@rneui/themed": "^4.0.0-rc.8",
+    "@supabase/supabase-js": "^2.58.0",
     "expo": "~54.0.12",
+    "expo-constants": "^18.0.9",
+    "expo-linking": "^8.0.8",
+    "expo-router": "^6.0.10",
     "expo-status-bar": "~3.0.8",
-    "react": "19.1.0",
-    "react-native": "0.81.4"
+    "react": "^19.1.0",
+    "react-native": "^0.81.4",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "router-tabs": "^0.1.0"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",

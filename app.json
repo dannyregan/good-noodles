@@ -1,5 +1,6 @@
 {
   "expo": {
+    "entryPoint": "expo-router/entry",
     "name": "expo-user-management",
     "slug": "expo-user-management",
     "version": "1.0.0",
@@ -7,6 +8,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "myapp",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
