@@ -4,6 +4,7 @@ import { Image, StyleSheet, View, Alert, Text } from 'react-native'
 import { Button, Input } from '@rneui/themed'
 import { supabase } from '../../lib/supabase'
 import { SessionContext } from '../../lib/SessionContext'
+import { UserFeed } from '../../components/UserFeed'
 import AvatarPicker from '../../components/AvatarPicker'
 
 export default function Account() {
@@ -33,7 +34,6 @@ export default function Account() {
 
         if (error && status !== 406) throw error
         if (data) {
-          console.log(data)
           setUsername(data.username)
           setAvatarUrl(data.avatar_url)
           setName(data.name)
@@ -57,7 +57,6 @@ export default function Account() {
   const updateProfile = async () => {
     if (!session?.user) return
     try {
-      console.log(session.user.id, username, avatarUrl)
       setLoading(true)
       const updates = {
         user_id: session.user.id,
@@ -79,7 +78,6 @@ export default function Account() {
   if (!session?.user) return null
 
   return (
-
     <>
       <View style={styles.container}>
         <View style={{ alignItems: 'flex-end', width: '95%'}} >
@@ -146,16 +144,11 @@ export default function Account() {
               leftIcon={{ type: 'ionicon', name: 'pencil' }}
             />
           </View>
-
         </View>
 
         <View style={styles.statsContainer}>
           <Text style={[styles.bold, styles.statsText, { marginBottom: 5}]}>Stats</Text>
           <View>
-            {/* <Text style={styles.bold}>
-              Tasks: {''}
-              <Text style={styles.notBold}>{tasksCompleted}</Text>
-            </Text> */}
             <Text style={styles.statsText}>Tasks: {tasksCompleted}</Text>
             <Text style={styles.statsText}>Thanks Received: {pointsReceived}</Text>
             <Text style={styles.statsText}>Thanks Be to God: {pointsGiven}</Text>
@@ -163,38 +156,20 @@ export default function Account() {
             <Text style={styles.statsText}>Good Noodle Stars: {goodNoodleStars}</Text>
           </View>
         </View>
-
       </View>
 
+      <View style={{ flex: 1, padding: 16 }}>
+        <UserFeed userId={session.user.id} />
+      </View>
 
-
-      {/* <View style={styles.container}>
-        <View style={[styles.verticallySpaced, styles.mt20]}>
-          <Input label="Name" value={name || ''} disabled />
-        </View>*/}
-        {/* <View style={styles.verticallySpaced}>
-          <Input label="Username" value={username || ''} onChangeText={setUsername} />
-        </View>
-
-
-        <View style={[styles.verticallySpaced, styles.mt20]}>
-          <Button
-            title={loading ? 'Loading...' : 'Update'}
-            onPress={updateProfile}
-            disabled={loading}
-          />
-        </View> */}
-
-        <View style={[ styles.verticallySpaced, { position: 'absolute', bottom: 10, right: 10 }]}>
-          <Button 
-            title="Sign Out" 
-            icon={{ name: 'exit-outline', type: 'ionicon', color: 'white', size: 20 }}
-            iconRight
-            onPress={() => supabase.auth.signOut()} />
-        </View>
-      
+      <View style={[ styles.verticallySpaced, { position: 'absolute', bottom: 10, right: 10 }]}>
+        <Button 
+          title="Sign Out" 
+          icon={{ name: 'exit-outline', type: 'ionicon', color: 'white', size: 20 }}
+          iconRight
+          onPress={() => supabase.auth.signOut()} />
+      </View>
     </>
-
   )
 }
 
@@ -233,6 +208,14 @@ const styles = StyleSheet.create({
   },
   notBold: {
     fontWeight: 'normal'
+  },
+  feedContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '95%',
+    borderWidth: 1,
+    borderColor: 'black',
+    borderRadius: 3,
   },
   primary: {
     color: '#e11383'
