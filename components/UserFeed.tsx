@@ -1,5 +1,5 @@
 // components/UserFeed.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { Button } from '@rneui/themed';
 import { useUserPosts } from '../hooks/useUserPosts';
@@ -12,41 +12,67 @@ type UserFeedProps = {
 
 export const UserFeed: React.FC<UserFeedProps> = ({ userId }) => {
   const { posts, loading, error } = useUserPosts(userId);
+  const { likedPosts: userLikes, refresh } = useUserLikes(userId);
 
-  // Map to track liked state per post
-  const [likedPosts, setLikedPosts] = useState<{ [postId: number]: boolean }>({});
-  const userLikes = useUserLikes(userId)
-  console.log('userLikes:', userLikes)
+  // Local state for reactive UI
+  const [postsState, setPostsState] = useState(posts);
+  const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
 
-    const toggleLike = async (postId: number, currentLikes: number) => {
-        const isLiked = likedPosts[postId] || false;
-        const newLike = !isLiked;
+  // Initialize local state when posts or userLikes load
+  useEffect(() => {
+    setPostsState(posts);
+  }, [posts]);
 
-        // Optimistically update UI
-        setLikedPosts((prev) => ({ ...prev, [postId]: newLike }));
+  useEffect(() => {
+    setLikedPosts(new Set(userLikes));
+  }, [userLikes]);
 
-        try {
-            console.log(isLiked, newLike)
-            const { error } = await supabase
-            .from('posts')
-            .update({ likes: newLike ? currentLikes + 1 : currentLikes })
-            .eq('post_id', postId);
+  const toggleLike = async (postId: number) => {
+    const isLiked = likedPosts.has(postId);
 
-            const { data } = await supabase
-            .from('posts')
-            .select('likes')
-            .eq('post_id', postId)
+    // Optimistic UI update: heart
+    const newLikedPosts = new Set(likedPosts);
+    if (isLiked) newLikedPosts.delete(postId);
+    else newLikedPosts.add(postId);
+    setLikedPosts(newLikedPosts);
 
-            if (error) throw error
-        } catch (err) {
-            console.log('Error updating likes:', err);
-            // Rollback UI if backend fails
-            setLikedPosts((prev) => ({ ...prev, [postId]: isLiked }));
-        }
-    };
+    // Optimistic UI update: likes count
+    setPostsState(prev =>
+      prev.map(post =>
+        post.post_id === postId
+          ? { ...post, likes: post.likes + (isLiked ? -1 : 1) }
+          : post
+      )
+    );
+
+    try {
+      const { error } = await supabase.rpc('togglelike', {
+        is_liked: isLiked,
+        p_user_id: userId,
+        p_post_id: postId,
+      });
+      if (error) throw error;
+
+      // Optional: refresh likes to reconcile with backend
+      await refresh();
+    } catch (err) {
+      console.error('Error toggling like:', err);
+
+      // Rollback UI
+      setLikedPosts(likedPosts);
+      setPostsState(prev =>
+        prev.map(post =>
+          post.post_id === postId
+            ? { ...post, likes: post.likes + (isLiked ? 1 : -1) }
+            : post
+        )
+      );
+    }
+  };
 
   const renderItem = ({ item }: { item: any }) => {
-    const liked = likedPosts[item.post_id] || false;
+    const isLiked = likedPosts.has(item.post_id);
+    const likeCount = postsState.find(p => p.post_id === item.post_id)?.likes ?? 0;
 
     const formattedDate = new Date(item.created_at).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -64,14 +90,14 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId }) => {
           <Button
             type="clear"
             icon={{
-              name: userLikes.likedPosts.has(item.post_id) ? 'heart' : 'heart-outline',
+              name: isLiked ? 'heart' : 'heart-outline',
               type: 'ionicon',
-              color: userLikes.likedPosts.has(item.post_id) ? 'red' : 'black',
+              color: isLiked ? 'red' : 'black',
               size: 20,
             }}
-            onPress={() => toggleLike(item.post_id, item.likes)}
+            onPress={() => toggleLike(item.post_id)}
           />
-          <Text style={styles.likesCount}>{item.likes + (liked ? 1 : 0)}</Text>
+          <Text style={styles.likesCount}>{likeCount}</Text>
         </View>
       </View>
     );
@@ -79,9 +105,15 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId }) => {
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error: {error}</Text>;
-  if (posts.length === 0) return <Text>No posts yet.</Text>;
+  if (!postsState || postsState.length === 0) return <Text>No posts yet.</Text>;
 
-  return <FlatList data={posts} keyExtractor={(item) => item.post_id.toString()} renderItem={renderItem} />;
+  return (
+    <FlatList
+      data={postsState}
+      keyExtractor={(item) => item.post_id.toString()}
+      renderItem={renderItem}
+    />
+  );
 };
 
 const styles = StyleSheet.create({
