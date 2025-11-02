@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, RefreshControl } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, RefreshControl, TouchableOpacity } from 'react-native';
 import { Button } from '@rneui/themed';
 import { useAllPosts } from '../hooks/useAllPosts';
 import { useUserLikes } from '../hooks/useUserLikes';
@@ -84,7 +84,9 @@ export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh })
 
     return (
       <View style={styles.postContainer}>
-        <Text style={styles.username}>{item.profiles.username}</Text>
+        <TouchableOpacity>
+            <Text style={styles.username}>{item.profiles.username}</Text>
+        </TouchableOpacity>
         <Text style={styles.dateText}>{new Date(item.created_at).toLocaleDateString()}</Text>
         <Text style={styles.postTitle}>{item.tasks?.task || 'No Task'}</Text>
         <Text style={styles.postContent}>{item.comment}</Text>
