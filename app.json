@@ -27,6 +27,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "75feeaa4-bbb2-4a4b-bd55-54c06ec5570d"
+      }
+    },
+    "owner": "dreegs",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/75feeaa4-bbb2-4a4b-bd55-54c06ec5570d"
     }
   }
 }

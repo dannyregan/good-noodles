@@ -1,27 +1,24 @@
-// app/(tabs)/account.tsx
-import { useState, useEffect, useContext } from 'react'
-import { Image, StyleSheet, View, Alert, Text } from 'react-native'
-import { Button, Input } from '@rneui/themed'
-import { supabase } from '../../lib/supabase'
-import { SessionContext } from '../../lib/SessionContext'
-import { Feed } from '../../components/Feed'
-import AvatarPicker from '../../components/AvatarPicker'
+import React, { useContext, useState, useCallback } from 'react';
+import { StyleSheet, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Feed } from '../../components/Feed';
+import { SessionContext } from '../../lib/SessionContext';
 
-export default function Account() {
-  const session = useContext(SessionContext)
-  const [loading, setLoading] = useState(true)
+export default function FeedScreen() {
+  const session = useContext(SessionContext);
+  const [refreshCount, setRefreshCount] = useState(0);
 
-  if (!session?.user) return
+  if (!session?.user) return null;
+
+  const onRefresh = useCallback(() => {
+    setRefreshCount(prev => prev + 1); // triggers Feed to refresh
+  }, []);
 
   return (
-    <>
-      <View style={styles.container}>
-        <View style={{ padding: 16 }}>
-          <Feed userId={session.user.id}/>
-        </View>
-      </View>
-    </>
-  )
+    <SafeAreaView style={styles.container}>
+      <Feed userId={session.user.id} refreshTrigger={refreshCount} onRefresh={onRefresh} />
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({

@@ -1,6 +1,5 @@
-// components/UserFeed.tsx
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, FlatList, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { Button } from '@rneui/themed';
 import { useAllPosts } from '../hooks/useAllPosts';
 import { useUserLikes } from '../hooks/useUserLikes';
@@ -8,27 +7,37 @@ import { supabase } from '../lib/supabase';
 
 type FeedProps = {
   userId: string;
+  refreshTrigger: number;
+  onRefresh: () => void;
 };
 
-export const Feed: React.FC<FeedProps> = ({ userId }) => {
-  const { posts, loading, error } = useAllPosts(userId);
-  const { likedPosts: userLikes, refresh } = useUserLikes(userId);
+export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh }) => {
+  const { posts, loading, error, refresh: refreshPosts } = useAllPosts(userId);
+  const { likedPosts: userLikes, refresh: refreshLikes } = useUserLikes(userId);
 
-  // Local state
   const [postsState, setPostsState] = useState(posts);
   const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    setPostsState(posts);
-  }, [posts]);
+  // Sync local state with hooks
+  useEffect(() => setPostsState(posts), [posts]);
+  useEffect(() => setLikedPosts(new Set(userLikes)), [userLikes]);
 
+  // Refresh feed when refreshTrigger changes
   useEffect(() => {
-    setLikedPosts(new Set(userLikes));
-  }, [userLikes]);
+    const doRefresh = async () => {
+      setRefreshing(true);
+      setTimeout(async () => {
+        await refreshPosts();
+        await refreshLikes();
+      }, 1000)
+      setRefreshing(false);
+    };
+    doRefresh();
+  }, [refreshTrigger]);
 
   const toggleLike = async (postId: number) => {
     const isLiked = likedPosts.has(postId);
-
     const newLikedPosts = new Set(likedPosts);
     if (isLiked) newLikedPosts.delete(postId);
     else newLikedPosts.add(postId);
@@ -50,11 +59,10 @@ export const Feed: React.FC<FeedProps> = ({ userId }) => {
       });
       if (error) throw error;
 
-      // Refresh likes to reconcile with backend
-      await refresh();
+      await refreshLikes(); // reconcile likes with backend
     } catch (err) {
-        Alert.alert("Error toggling the like.")
-        console.error('Error toggling like:', err);
+      Alert.alert('Error toggling the like.');
+      console.error(err);
 
       // Rollback UI
       setLikedPosts(likedPosts);
@@ -72,26 +80,12 @@ export const Feed: React.FC<FeedProps> = ({ userId }) => {
     const isLiked = likedPosts.has(item.post_id);
     const likeCount = postsState.find(p => p.post_id === item.post_id)?.likes ?? 0;
 
-    const formattedDate = new Date(item.created_at).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-
-    const greedy = () => {
-        Alert.alert(
-            'Greedy!',
-            'You can\'t like your own posts.',
-            [{
-                text: 'Sorry'
-            }]
-        )
-    };
+    const greedy = () => Alert.alert("Greedy!", "You can't like your own posts.", [{ text: 'Sorry' }]);
 
     return (
       <View style={styles.postContainer}>
         <Text style={styles.username}>{item.profiles.username}</Text>
-        <Text style={styles.dateText}>{formattedDate}</Text>
+        <Text style={styles.dateText}>{new Date(item.created_at).toLocaleDateString()}</Text>
         <Text style={styles.postTitle}>{item.tasks?.task || 'No Task'}</Text>
         <Text style={styles.postContent}>{item.comment}</Text>
 
@@ -112,53 +106,25 @@ export const Feed: React.FC<FeedProps> = ({ userId }) => {
     );
   };
 
-  if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error: {error}</Text>;
-  if (!postsState || postsState.length === 0) return <Text>No posts yet.</Text>;
+  if (!postsState.length) return <Text>No posts yet.</Text>;
 
   return (
     <FlatList
       data={postsState}
-      keyExtractor={(item) => item.post_id.toString()}
+      keyExtractor={item => item.post_id.toString()}
       renderItem={renderItem}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     />
   );
 };
 
 const styles = StyleSheet.create({
-  postContainer: {
-    padding: 12,
-    paddingBottom: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  username: {
-    fontWeight: 'bold',
-    fontSize: 18,
-    paddingBottom: 2,
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#555',
-    paddingBottom: 6,
-  },
-  postTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 6,
-  },
-  postContent: {
-    fontSize: 16,
-    color: '#333',
-  },
-  likesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  likesCount: {
-    marginLeft: 4,
-    fontSize: 14,
-    color: '#555',
-  },
+  postContainer: { padding: 12, borderBottomWidth: 1, borderBottomColor: '#ccc' },
+  username: { fontWeight: 'bold', fontSize: 18, paddingBottom: 2 },
+  dateText: { fontSize: 14, color: '#555', paddingBottom: 6 },
+  postTitle: { fontWeight: 'bold', fontSize: 16, marginBottom: 6 },
+  postContent: { fontSize: 16, color: '#333' },
+  likesRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
+  likesCount: { marginLeft: 4, fontSize: 14, color: '#555' },
 });
