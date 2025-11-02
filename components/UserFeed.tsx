@@ -1,6 +1,6 @@
 // components/UserFeed.tsx
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert } from 'react-native';
 import { Button } from '@rneui/themed';
 import { useUserPosts } from '../hooks/useUserPosts';
 import { useUserLikes } from '../hooks/useUserLikes';
@@ -27,47 +27,14 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId }) => {
     setLikedPosts(new Set(userLikes));
   }, [userLikes]);
 
-  const toggleLike = async (postId: number) => {
-    const isLiked = likedPosts.has(postId);
-
-    // Optimistic UI update: heart
-    const newLikedPosts = new Set(likedPosts);
-    if (isLiked) newLikedPosts.delete(postId);
-    else newLikedPosts.add(postId);
-    setLikedPosts(newLikedPosts);
-
-    // Optimistic UI update: likes count
-    setPostsState(prev =>
-      prev.map(post =>
-        post.post_id === postId
-          ? { ...post, likes: post.likes + (isLiked ? -1 : 1) }
-          : post
-      )
-    );
-
-    try {
-      const { error } = await supabase.rpc('togglelike', {
-        is_liked: isLiked,
-        p_user_id: userId,
-        p_post_id: postId,
-      });
-      if (error) throw error;
-
-      // Optional: refresh likes to reconcile with backend
-      await refresh();
-    } catch (err) {
-      console.error('Error toggling like:', err);
-
-      // Rollback UI
-      setLikedPosts(likedPosts);
-      setPostsState(prev =>
-        prev.map(post =>
-          post.post_id === postId
-            ? { ...post, likes: post.likes + (isLiked ? 1 : -1) }
-            : post
-        )
-      );
-    }
+  const greedy = () => {
+    Alert.alert(
+      'Greedy!',
+      'You can\'t like your own posts.',
+      [{
+        text: 'Sorry'
+      }]
+    )
   };
 
   const renderItem = ({ item }: { item: any }) => {
@@ -90,12 +57,12 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId }) => {
           <Button
             type="clear"
             icon={{
-              name: isLiked ? 'heart' : 'heart-outline',
+              name: 'heart',
               type: 'ionicon',
-              color: isLiked ? 'red' : 'black',
+              color: 'red',
               size: 20,
             }}
-            onPress={() => toggleLike(item.post_id)}
+            onPress={() => greedy()}
           />
           <Text style={styles.likesCount}>{likeCount}</Text>
         </View>

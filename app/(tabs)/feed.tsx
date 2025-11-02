@@ -9,7 +9,7 @@ import AvatarPicker from '../../components/AvatarPicker'
 
 export default function Account() {
   const session = useContext(SessionContext)
-  const [loading,   setLoading]   = useState(true)
+  const [loading, setLoading] = useState(true)
 
   if (!session?.user) return
 

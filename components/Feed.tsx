@@ -1,24 +1,23 @@
 // components/UserFeed.tsx
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert } from 'react-native';
 import { Button } from '@rneui/themed';
-import { useUserPosts } from '../hooks/useUserPosts';
+import { useAllPosts } from '../hooks/useAllPosts';
 import { useUserLikes } from '../hooks/useUserLikes';
 import { supabase } from '../lib/supabase';
 
-type UserFeedProps = {
+type FeedProps = {
   userId: string;
 };
 
-export const Feed: React.FC<UserFeedProps> = ({ userId }) => {
-  const { posts, loading, error } = useUserPosts(userId);
+export const Feed: React.FC<FeedProps> = ({ userId }) => {
+  const { posts, loading, error } = useAllPosts(userId);
   const { likedPosts: userLikes, refresh } = useUserLikes(userId);
 
-  // Local state for reactive UI
+  // Local state
   const [postsState, setPostsState] = useState(posts);
   const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
 
-  // Initialize local state when posts or userLikes load
   useEffect(() => {
     setPostsState(posts);
   }, [posts]);
@@ -30,13 +29,11 @@ export const Feed: React.FC<UserFeedProps> = ({ userId }) => {
   const toggleLike = async (postId: number) => {
     const isLiked = likedPosts.has(postId);
 
-    // Optimistic UI update: heart
     const newLikedPosts = new Set(likedPosts);
     if (isLiked) newLikedPosts.delete(postId);
     else newLikedPosts.add(postId);
     setLikedPosts(newLikedPosts);
 
-    // Optimistic UI update: likes count
     setPostsState(prev =>
       prev.map(post =>
         post.post_id === postId
@@ -53,10 +50,11 @@ export const Feed: React.FC<UserFeedProps> = ({ userId }) => {
       });
       if (error) throw error;
 
-      // Optional: refresh likes to reconcile with backend
+      // Refresh likes to reconcile with backend
       await refresh();
     } catch (err) {
-      console.error('Error toggling like:', err);
+        Alert.alert("Error toggling the like.")
+        console.error('Error toggling like:', err);
 
       // Rollback UI
       setLikedPosts(likedPosts);
@@ -80,8 +78,19 @@ export const Feed: React.FC<UserFeedProps> = ({ userId }) => {
       day: 'numeric',
     });
 
+    const greedy = () => {
+        Alert.alert(
+            'Greedy!',
+            'You can\'t like your own posts.',
+            [{
+                text: 'Sorry'
+            }]
+        )
+    };
+
     return (
       <View style={styles.postContainer}>
+        <Text style={styles.username}>{item.profiles.username}</Text>
         <Text style={styles.dateText}>{formattedDate}</Text>
         <Text style={styles.postTitle}>{item.tasks?.task || 'No Task'}</Text>
         <Text style={styles.postContent}>{item.comment}</Text>
@@ -95,7 +104,7 @@ export const Feed: React.FC<UserFeedProps> = ({ userId }) => {
               color: isLiked ? 'red' : 'black',
               size: 20,
             }}
-            onPress={() => toggleLike(item.post_id)}
+            onPress={() => item.user_id === userId ? greedy() : toggleLike(item.post_id)}
           />
           <Text style={styles.likesCount}>{likeCount}</Text>
         </View>
@@ -123,10 +132,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
+  username: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    paddingBottom: 2,
+  },
   dateText: {
     fontSize: 14,
     color: '#555',
-    marginBottom: 4,
+    paddingBottom: 6,
   },
   postTitle: {
     fontWeight: 'bold',
