@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react'
-import { Image, StyleSheet, View, Alert, Text, ScrollView, RefreshControl, Button, TextInput } from 'react-native'
-import {  Input } from '@rneui/themed'
+import { Image, StyleSheet, View, Alert, Text, ScrollView, RefreshControl, Button, TextInput, } from 'react-native'
+import {  Input, Icon } from '@rneui/themed'
 import { supabase } from '../../lib/supabase'
 import { SessionContext } from '../../lib/SessionContext'
 import { UserFeed } from '../../components/UserFeed'
@@ -119,13 +119,13 @@ export default function Account() {
 
 
           <View style={{ alignItems: 'center', width: 200}}>
-            <View style={{ alignItems: 'center', marginBottom: 10 }}>
+            <View style={{ alignItems: 'center',  }}>
               {avatarUrl ? (
                 <Image
                   source={{ uri: avatarUrl }}
                   style={styles.avatar}
                   resizeMode="cover"
-                />) : null}
+                />) : (<View style={styles.avatar}/>)}
                 <Button
                   title={loading ? 'Loading...' : 'Choose Photo'}
                   onPress={pickImage}
@@ -170,16 +170,40 @@ export default function Account() {
 
 
 
-        {/* <View style={styles.statsContainer}>
-          <Text style={[styles.bold, styles.statsText, { marginBottom: 5}]}>Stats</Text>
-          <View>
-            <Text style={styles.statsText}>Tasks: {tasksCompleted}</Text>
-            <Text style={styles.statsText}>Thanks Received: {pointsReceived}</Text>
-            <Text style={styles.statsText}>Thanks Be to God: {pointsGiven}</Text>
-            <Text style={styles.statsText}>Total Thanks: {totalPoints}</Text>
-            <Text style={styles.statsText}>Good Noodle Stars: {goodNoodleStars}</Text>
+        <View style={styles.statsContainer}>
+
+          <View style={styles.statsBox}>
+            <Text style={[styles.bold, styles.statsText,]}>{totalPoints}</Text>
+            <Text>Points</Text>
           </View>
+
+          <View style={styles.statsBox}>
+            <Text style={[styles.bold, styles.statsText,]}>{pointsGiven}</Text>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Icon name='heart-outline' type='ionicon' size={15}></Icon>
+              <Text> Given</Text>
+            </View>
+          </View>
+
+          <View style={styles.statsBox}>
+            <Text style={[styles.bold, styles.statsText,]}>{pointsReceived}</Text>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Icon name='heart-outline' type='ionicon' size={15}></Icon>
+              <Text> Earned</Text>
+            </View>
+          </View>
+
+          <View style={styles.statsBox}>
+            <Text style={[styles.bold, styles.statsText,]}>{tasksCompleted}</Text>
+            <Text>Tasks</Text>
+          </View>
+
         </View>
+        {/* <View>
+          <View>
+            <Text style={styles.statsText}>Good Noodle Stars: {goodNoodleStars}</Text>
+          </View> 
+        </View> */}
 
         <View style={{ flex: 1, padding: 16 }}>
           <UserFeed userId={session.user.id} refreshTrigger={refreshKey} />
@@ -189,7 +213,7 @@ export default function Account() {
           <Button 
             title="Sign Out" 
             onPress={() => supabase.auth.signOut()} />
-        </View> */}
+        </View>
       </View>
     </ScrollView>
   )
@@ -200,11 +224,11 @@ const styles = StyleSheet.create({
     marginTop: 80,
     alignItems: 'center',
   },
-  // verticallySpaced: {
-  //   paddingTop: 4,
-  //   paddingBottom: 4,
-  //   alignSelf: 'stretch',
-  // },
+  verticallySpaced: {
+    paddingTop: 4,
+    paddingBottom: 4,
+    alignSelf: 'stretch',
+  },
   avatar: {
     width: 200,
     height: 200,
@@ -217,15 +241,23 @@ const styles = StyleSheet.create({
     padding: 5
   },
   statsContainer: {
-    margin: 30,
-    width: '95%',
-    borderWidth: 1,
-    borderColor: 'black',
-    borderRadius: 3,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
     padding: 10,
   },
+  statsBox: {
+    height: 90,
+    width: 90,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgb(124, 225, 4, .5)',
+    borderRadius: 10,
+
+  },
   statsText: {
-    fontSize: 18
+    fontSize: 18,
+    padding: 2
   },
   bold: {
     fontWeight: 'bold'
