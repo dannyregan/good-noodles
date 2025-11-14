@@ -8,10 +8,11 @@ import { supabase } from '../lib/supabase';
 
 type UserFeedProps = {
   userId: string;
+  refreshTrigger?: number | undefined;
 };
 
-export const UserFeed: React.FC<UserFeedProps> = ({ userId }) => {
-  const { posts, loading, error } = useUserPosts(userId);
+export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger }) => {
+  const { posts, loading, error } = useUserPosts(userId, refreshTrigger);
   const { likedPosts: userLikes, refresh } = useUserLikes(userId);
 
   // Local state for reactive UI
@@ -57,9 +58,9 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId }) => {
           <Button
             type="clear"
             icon={{
-              name: 'heart',
+              name: 'heart-outline',
               type: 'ionicon',
-              color: 'red',
+              color: 'black',
               size: 20,
             }}
             onPress={() => greedy()}
@@ -79,6 +80,7 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId }) => {
       data={postsState}
       keyExtractor={(item) => item.post_id.toString()}
       renderItem={renderItem}
+      scrollEnabled={false}
     />
   );
 };
@@ -89,6 +91,7 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    minWidth: '100%'
   },
   dateText: {
     fontSize: 14,

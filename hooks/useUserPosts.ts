@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-export function useUserPosts(userId: string) {
+export function useUserPosts(userId: string, refreshTrigger: number | undefined) {
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -29,7 +29,7 @@ export function useUserPosts(userId: string) {
         }
 
         fetchPosts()
-    }, [userId])
+    }, [userId, refreshTrigger])
 
     return { posts, loading, error }
 }

@@ -39,8 +39,11 @@ export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh })
   const toggleLike = async (postId: number) => {
     const isLiked = likedPosts.has(postId);
     const newLikedPosts = new Set(likedPosts);
-    if (isLiked) newLikedPosts.delete(postId);
-    else newLikedPosts.add(postId);
+    if (isLiked) {
+        newLikedPosts.delete(postId);
+    } else {
+        newLikedPosts.add(postId);
+    }
     setLikedPosts(newLikedPosts);
 
     setPostsState(prev =>
@@ -52,14 +55,16 @@ export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh })
     );
 
     try {
-      const { error } = await supabase.rpc('togglelike', {
-        is_liked: isLiked,
-        p_user_id: userId,
-        p_post_id: postId,
-      });
-      if (error) throw error;
-
-      await refreshLikes(); // reconcile likes with backend
+        const { error } = await supabase.rpc('togglelike', {
+            is_liked: isLiked,
+            p_user_id: userId,
+            p_post_id: postId,
+        });
+        
+        if (error) throw error;
+//===========================================================================
+//===========================================================================
+        await refreshLikes();
     } catch (err) {
       Alert.alert('Error toggling the like.');
       console.error(err);

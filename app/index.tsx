@@ -1,12 +1,11 @@
 
-import { StyleSheet, View, Alert } from 'react-native'
-import {  Input } from '@rneui/themed'
+import { StyleSheet, View, Text } from 'react-native'
 
 export default function Feed() {
   return (
     <View style={styles.container}>
       <View style={styles.verticallySpaced}>
-        <Input label="Feed" value={'Welcome to the Feed!'} disabled />
+        <Text>Welcome to Good Noodles</Text>
       </View>
     </View>
   )

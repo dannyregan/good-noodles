@@ -1,7 +1,7 @@
 {
   "expo": {
     "entryPoint": "expo-router/entry",
-    "name": "expo-user-management",
+    "name": "Good Noodles",
     "slug": "expo-user-management",
     "version": "1.0.0",
     "orientation": "portrait",

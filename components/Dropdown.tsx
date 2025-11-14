@@ -28,27 +28,37 @@ interface CategoryItem {
 interface ModalDropdownProps {
   taskData: Task[],
   categories: Record<string, number>,
-  onSelectCategory: (selected: CategoryItem) => void;
+  handleSelectedCategory: (selected: CategoryItem) => void;
+  handleSelectedTask: (selected: CategoryItem) => void;
+  placeholder: string,
+  selectedItem: string | undefined
 }
 
-export const ModalDropdown: React.FC<ModalDropdownProps> = ({ taskData, categories, onSelectCategory }) => {
+export const ModalDropdown: React.FC<ModalDropdownProps> = ({ taskData, categories, handleSelectedCategory, handleSelectedTask, placeholder, selectedItem }) => {
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [categoryNames, setCategoryNames] = useState<CategoryItem[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryItem | null>(null);  
+  const [selection, setSelection] = useState<CategoryItem | null>(null);  
+  
 
   useEffect(() => {
     const categoryArray: CategoryItem[] = Object.entries(categories)
       .map(([name, id]) => ({ name, id }))
       .sort((a, b) => a.name.localeCompare(b.name));
     setCategoryNames(categoryArray);
+    setSelection(null);
   }, [categories]);
 
-  const toggleModal = () => setModalVisible(!isModalVisible);
+  useEffect(() => {
+    if (!selectedItem) {
+      setSelection(null);
+    }
+  }, [selectedItem]);
 
-  const handleSelectCategory = (item: CategoryItem) => {
-    setSelectedCategory(item);
-    onSelectCategory(item);
+   const toggleModal = () => setModalVisible(!isModalVisible);
+
+  const handleSelect = (item: CategoryItem) => {
+    setSelection(item);
     toggleModal();
   };
 
@@ -56,7 +66,7 @@ export const ModalDropdown: React.FC<ModalDropdownProps> = ({ taskData, categori
     <View style={styles.container}>
       <TouchableOpacity style={styles.button} onPress={toggleModal}>
         <Text style={styles.buttonText}>
-          {selectedCategory ? selectedCategory.name : "Select an option"}
+          {selection ? selection.name : (placeholder)}
         </Text>
       </TouchableOpacity>
 
@@ -69,7 +79,15 @@ export const ModalDropdown: React.FC<ModalDropdownProps> = ({ taskData, categori
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.option}
-                  onPress={() => handleSelectCategory(item)}
+                  onPress={() => {
+                    if (placeholder === 'Category') {
+                      handleSelectedCategory(item)
+                    } else {
+                      handleSelectedTask(item)
+                    }
+                    handleSelect(item)
+                  }
+                  }
                 >
                   <Text style={styles.optionText}>{item.name}</Text>
                 </TouchableOpacity>
