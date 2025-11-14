@@ -1,9 +1,10 @@
 import { useState, useEffect, useContext } from 'react'
-import { Image, StyleSheet, View, Alert, Text, ScrollView, RefreshControl } from 'react-native'
-import { Button, Input } from '@rneui/themed'
+import { Image, StyleSheet, View, Alert, Text, ScrollView, RefreshControl, Button, TextInput } from 'react-native'
+import {  Input } from '@rneui/themed'
 import { supabase } from '../../lib/supabase'
 import { SessionContext } from '../../lib/SessionContext'
 import { UserFeed } from '../../components/UserFeed'
+import * as ImagePicker from 'expo-image-picker'
 
 export default function Account() {
   const session = useContext(SessionContext)
@@ -12,12 +13,12 @@ export default function Account() {
   const [refreshKey, setRefreshKey] = useState(0) 
   const [username, setUsername] = useState('')
   const [name, setName] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
   const [tasksCompleted, setTasksCompleted] = useState(0)
   const [pointsReceived, setPointsReceived] = useState(0)
   const [pointsGiven, setPointsGiven] = useState(0)
   const [totalPoints, setTotalPoints] = useState(0)
   const [goodNoodleStars, setGoodNoodleStars] = useState(0)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   
 
   const getProfile = async () => {
@@ -80,6 +81,21 @@ export default function Account() {
     }
   }
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4,3],
+      quality: 1
+    });
+
+    console.log(result)
+
+    if (!result.canceled) {
+      setAvatarUrl(result.assets[0].uri);
+    }
+  };
+
   if (!session?.user) return null
 
   return (
@@ -98,38 +114,63 @@ export default function Account() {
           />
         </View>
 
-        <View style={{ flexDirection: "row", alignItems: 'center', justifyContent: 'space-around', width: "95%", height: 100 }}>
-          <View style={{ width: 100}}>
-            {avatarUrl ? (
-              <Image
-                source={{ uri: avatarUrl }}
-                style={styles.avatar}
-                resizeMode="cover"
-              />) : null}
+
+
+
+
+          <View style={{ alignItems: 'center', width: 200}}>
+            <View style={{ alignItems: 'center', marginBottom: 10 }}>
+              {avatarUrl ? (
+                <Image
+                  source={{ uri: avatarUrl }}
+                  style={styles.avatar}
+                  resizeMode="cover"
+                />) : null}
+                <Button
+                  title={loading ? 'Loading...' : 'Choose Photo'}
+                  onPress={pickImage}
+                />
+            </View>
+
+            <View style={{
+              alignItems: "center",
+            }}>
+
+                <View>
+                  <TextInput
+                    style={[styles.name, styles.bold]}
+                    value={username}
+                    placeholder='Username'
+                    onChangeText={setUsername}
+                    autoCapitalize='none'
+                    autoComplete='off'
+                    autoCorrect={false}
+                    enterKeyHint='done'
+                    textAlign='center'
+                  />
+                </View>
+                <View>
+                  <TextInput
+                    style={styles.name}
+                    value={name}
+                    onChangeText={setName}
+                    autoCapitalize='none'
+                    autoComplete='off'
+                    autoCorrect={false}
+                    enterKeyHint='done'
+                    textAlign='center'
+                  />
+                </View>
+
+            </View>
           </View>
 
-          <View style={{ alignItems: "flex-start" , width: '70%', height: 100, marginLeft: 10,}}>
-            <View style={{ height: 50, width: 275, }}>
-              <Input
-                style={styles.name}
-                value={username || ""}
-                onChangeText={setUsername}
-                inputContainerStyle={{ borderBottomWidth: 0 }}
-                leftIcon={{ type: 'ionicon', name: 'pencil' }}
-              />
-            </View>
-            <View style={{ height: 50, width: 275, }}>
-              <Input
-                value={name || ""}
-                onChangeText={setName}
-                inputContainerStyle={{ borderBottomWidth: 0 }}
-                leftIcon={{ type: 'ionicon', name: 'pencil' }}
-              />
-            </View>
-          </View>
-        </View>
 
-        <View style={styles.statsContainer}>
+
+
+
+
+        {/* <View style={styles.statsContainer}>
           <Text style={[styles.bold, styles.statsText, { marginBottom: 5}]}>Stats</Text>
           <View>
             <Text style={styles.statsText}>Tasks: {tasksCompleted}</Text>
@@ -147,10 +188,8 @@ export default function Account() {
         <View style={[ styles.verticallySpaced, { marginTop: 20, alignSelf: 'center' }]}>
           <Button 
             title="Sign Out" 
-            icon={{ name: 'exit-outline', type: 'ionicon', color: 'white', size: 20 }}
-            iconRight
             onPress={() => supabase.auth.signOut()} />
-        </View>
+        </View> */}
       </View>
     </ScrollView>
   )
@@ -161,20 +200,21 @@ const styles = StyleSheet.create({
     marginTop: 80,
     alignItems: 'center',
   },
-  verticallySpaced: {
-    paddingTop: 4,
-    paddingBottom: 4,
-    alignSelf: 'stretch',
-  },
+  // verticallySpaced: {
+  //   paddingTop: 4,
+  //   paddingBottom: 4,
+  //   alignSelf: 'stretch',
+  // },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 70,
-    borderWidth: 1,
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#7ce104'
   },
   name: {
-    fontWeight: 'bold',
-    fontSize: 20
+    fontSize: 20,
+    padding: 5
   },
   statsContainer: {
     margin: 30,
