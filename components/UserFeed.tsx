@@ -1,6 +1,6 @@
 // components/UserFeed.tsx
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, Image } from 'react-native';
 import { Button } from '@rneui/themed';
 import { useUserPosts } from '../hooks/useUserPosts';
 import { useUserLikes } from '../hooks/useUserLikes';
@@ -9,9 +9,11 @@ import { supabase } from '../lib/supabase';
 type UserFeedProps = {
   userId: string;
   refreshTrigger?: number | undefined;
+  avatarUrl: string | undefined;
+  username: string | undefined;
 };
 
-export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger }) => {
+export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avatarUrl, username }) => {
   const { posts, loading, error } = useUserPosts(userId, refreshTrigger);
   const { likedPosts: userLikes, refresh } = useUserLikes(userId);
 
@@ -39,6 +41,7 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger }) =>
   };
 
   const renderItem = ({ item }: { item: any }) => {
+    console.log('url:', avatarUrl)
     const isLiked = likedPosts.has(item.post_id);
     const likeCount = postsState.find(p => p.post_id === item.post_id)?.likes ?? 0;
 
@@ -49,10 +52,23 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger }) =>
     });
 
     return (
-      <View style={styles.postContainer}>
-        <Text style={styles.dateText}>{formattedDate}</Text>
-        <Text style={styles.postTitle}>{item.tasks?.task || 'No Task'}</Text>
-        <Text style={styles.postContent}>{item.comment}</Text>
+      <View style={styles.postContainer} >
+        <View style={{flexDirection: 'row', }}>
+          <Image
+            source={{ uri: avatarUrl }}
+            style={styles.avatar}
+            resizeMode="cover"
+          />
+          <View style={{ width: 150, marginLeft: 15, justifyContent: 'center',}}>
+            <Text style={{ fontWeight: 'bold'}}>{username}</Text>
+            <Text style={styles.dateText}>{formattedDate}</Text>
+          </View>
+        </View>
+
+        <View style={{paddingTop: 8, }}>
+          <Text style={styles.postTitle}>{item.tasks?.task || 'No Task'}</Text>
+          <Text style={styles.postContent}>{item.comment}</Text>
+        </View>
 
         <View style={styles.likesRow}>
           <Button
@@ -89,14 +105,19 @@ const styles = StyleSheet.create({
   postContainer: {
     padding: 12,
     paddingBottom: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    minWidth: '100%'
+    minWidth: '100%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    marginBottom: 25
+  },
+  avatar: {
+    height: 50,
+    width: 50,
+    borderRadius: 10,
   },
   dateText: {
     fontSize: 14,
     color: '#555',
-    marginBottom: 4,
   },
   postTitle: {
     fontWeight: 'bold',

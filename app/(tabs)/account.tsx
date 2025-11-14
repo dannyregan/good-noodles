@@ -18,7 +18,7 @@ export default function Account() {
   const [pointsGiven, setPointsGiven] = useState(0)
   const [totalPoints, setTotalPoints] = useState(0)
   const [goodNoodleStars, setGoodNoodleStars] = useState(0)
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   
 
   const getProfile = async () => {
@@ -151,7 +151,7 @@ export default function Account() {
                 </View>
                 <View>
                   <TextInput
-                    style={styles.name}
+                    style={[styles.name, {color: '#545454'}]}
                     value={name}
                     onChangeText={setName}
                     autoCapitalize='none'
@@ -206,7 +206,7 @@ export default function Account() {
         </View> */}
 
         <View style={{ flex: 1, padding: 16 }}>
-          <UserFeed userId={session.user.id} refreshTrigger={refreshKey} />
+          <UserFeed userId={session.user.id} refreshTrigger={refreshKey} avatarUrl={avatarUrl} username={username} />
         </View>
 
         <View style={[ styles.verticallySpaced, { marginTop: 20, alignSelf: 'center' }]}>
@@ -238,7 +238,6 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 20,
-    padding: 5
   },
   statsContainer: {
     flexDirection: 'row',
