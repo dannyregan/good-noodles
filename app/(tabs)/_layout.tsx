@@ -1,27 +1,3 @@
-// // app/(tabs)/_layout.tsx
-// import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs'
-// import { Ionicons } from '@expo/vector-icons'
-
-// export default function TabsLayout() {
-//     console.log("Rendering Tabs Layout")    
-//   return (
-//     <NativeTabs>
-//       {/* Account/Profile Tab */}
-//      <NativeTabs.Trigger name="feed">
-//         <Icon sf="gear" />
-//         <Label>Feed</Label>
-//       </NativeTabs.Trigger>
-//       {/* Home Tab */}
-//       <NativeTabs.Trigger name="account">
-//         <Ionicons name="person-sharp" size={20} color="black" />
-//         <Icon sf="house.fill" />
-//         <Label>Account</Label>
-//       </NativeTabs.Trigger>
-//     </NativeTabs> 
-//   )
-// }
-
-
 import { Tabs } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 
@@ -29,10 +5,19 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarShowLabel: false,
-        tabBarActiveTintColor: 'black',
-        tabBarInactiveTintColor: 'gray',
         headerShown: false,
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: '#F20C90',
+        tabBarInactiveTintColor: 'white',
+
+        tabBarStyle: {
+          backgroundColor: '#0A0A0A',
+          borderTopWidth: 0,
+          height: 70,
+          paddingBottom: 0,
+          paddingTop: 10,
+          marginBottom: 0,
+        },
       }}
     >
       <Tabs.Screen

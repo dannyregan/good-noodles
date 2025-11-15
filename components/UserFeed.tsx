@@ -5,6 +5,7 @@ import { Button } from '@rneui/themed';
 import { useUserPosts } from '../hooks/useUserPosts';
 import { useUserLikes } from '../hooks/useUserLikes';
 import { supabase } from '../lib/supabase';
+import { LinearGradient } from 'expo-linear-gradient'
 
 type UserFeedProps = {
   userId: string;
@@ -41,8 +42,9 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
   };
 
   const renderItem = ({ item }: { item: any }) => {
+    console.log(item)
     const isLiked = likedPosts.has(item.post_id);
-    const likeCount = postsState.find(p => p.post_id === item.post_id)?.likes ?? 0;
+    const likeCount = postsState.find(p => p.post_id === item.post_id)?.liked_by?.length ?? 0;
 
     const formattedDate = new Date(item.created_at).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -51,38 +53,63 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
     });
 
     return (
-      <View style={styles.postContainer} >
-        <View style={{flexDirection: 'row', }}>
-          <Image
-            source={{ uri: avatarUrl }}
-            style={styles.avatar}
-            resizeMode="cover"
-          />
-          <View style={{ width: 150, marginLeft: 15, justifyContent: 'center',}}>
-            <Text style={{ fontWeight: 'bold'}}>{username}</Text>
-            <Text style={styles.dateText}>{formattedDate}</Text>
+      <LinearGradient
+        colors={['rgb(22,22,22)', 'rgb(25,25,25)', 'rgb(28,28,28)']}
+        locations={[.5, .7, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.postContainer, {padding: 0}]} 
+
+      >
+        <View style={styles.postContainer} >
+          <View style={{flexDirection: 'row', }}>
+            <Image
+              source={{ uri: avatarUrl }}
+              style={styles.avatar}
+              resizeMode="cover"
+            />
+            <View style={{ width: 150, marginLeft: 15, justifyContent: 'center',}}>
+              <Text style={{ fontWeight: 'bold', color: 'white', paddingBottom: 4}}>{username}</Text>
+              <Text style={styles.dateText}>{formattedDate}</Text>
+            </View>
           </View>
-        </View>
 
-        <View style={{paddingTop: 8, }}>
-          <Text style={styles.postTitle}>{item.tasks?.task || 'No Task'}</Text>
-          <Text style={styles.postContent}>{item.comment}</Text>
-        </View>
+          <View style={{paddingTop: 8, }}>
+            <Text style={styles.postTitle}>{item.tasks?.task || 'No Task'}</Text>
+            <Text style={styles.postContent}>{item.comment}</Text>
+          </View>
 
-        <View style={styles.likesRow}>
-          <Button
-            type="clear"
-            icon={{
-              name: 'heart-outline',
-              type: 'ionicon',
-              color: 'black',
-              size: 20,
-            }}
-            onPress={() => greedy()}
-          />
-          <Text style={styles.likesCount}>{likeCount}</Text>
+
+
+          <View style={styles.likesRow}>
+            <Button
+              type="clear"
+              icon={{
+                name: 'heart-outline',
+                type: 'ionicon',
+                color: 'white',
+                size: 20,
+              }}
+              onPress={() => greedy()}
+            />
+            <Text style={styles.likesCount}>{likeCount}</Text>
+            
+
+            <View style={{ flexDirection: 'row', marginLeft: 8 }}>
+              {item.liked_by?.map((like: any) => (
+                <Image
+                  key={like.user_id}
+                  source={{ uri: like.avatar_url }}
+                  style={styles.likedAvatar}
+                />
+              ))}
+            </View>
+          </View>
+
+
+
         </View>
-      </View>
+      </LinearGradient>
     );
   };
 
@@ -105,7 +132,6 @@ const styles = StyleSheet.create({
     padding: 12,
     paddingBottom: 0,
     minWidth: '100%',
-    backgroundColor: 'white',
     borderRadius: 10,
     marginBottom: 10
   },
@@ -116,16 +142,17 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 14,
-    color: '#555',
+    color: '#999',
   },
   postTitle: {
     fontWeight: 'bold',
     fontSize: 16,
     marginBottom: 6,
+    color: 'white'
   },
   postContent: {
     fontSize: 16,
-    color: '#333',
+    color: 'white',
   },
   likesRow: {
     flexDirection: 'row',
@@ -137,4 +164,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
   },
+  likedAvatar: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#0A0A0A', // matches background for a clean outline
+  }
 });
