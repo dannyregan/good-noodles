@@ -30,10 +30,11 @@ export function useUserPosts(userId: string, refreshTrigger: number | undefined)
                         const liked_by = await Promise.all(
                             (post.likes || []).map(async (like: { user_id: string, profiles: { username: string, avatar_url: string | null } }) => {
                                 let avatar_url = like.profiles.avatar_url;
+
                                 if (avatar_url) {
                                     const { data: publicData } = supabase.storage
                                         .from('avatars')
-                                        .getPublicUrl(avatar_url);
+                                        .getPublicUrl(`public/${avatar_url}`);
                                     avatar_url = publicData.publicUrl;
                                 }
                                 return {

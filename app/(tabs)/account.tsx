@@ -77,19 +77,17 @@ export default function Account() {
       const updates = {
         user_id: session.user.id,
         username,
-        avatar_url: avatarUrl,
+        avatar_url: `${username}.png`,
         name,
         updated_at: new Date(),
       }
       const { error } = await supabase.from('profiles').upsert(updates, { onConflict: 'user_id' })
       if (error) throw error
-      console.log('photo path', photoPath)
       Alert.alert('Profile updated!')
     } catch (error) {
       if (error instanceof Error) Alert.alert(error.message)
     } finally {
       setLoading(false)
-      console.log('photo path', photoPath)
     }
   }
 
@@ -148,7 +146,7 @@ export default function Account() {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      contentContainerStyle={{ paddingBottom: 80,}}
+      contentContainerStyle={{ paddingBottom: 40,}}
     >
       <View style={styles.container}>
 

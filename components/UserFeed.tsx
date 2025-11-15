@@ -42,7 +42,6 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
   };
 
   const renderItem = ({ item }: { item: any }) => {
-    console.log(item)
     const isLiked = likedPosts.has(item.post_id);
     const likeCount = postsState.find(p => p.post_id === item.post_id)?.liked_by?.length ?? 0;
 
@@ -88,26 +87,24 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
                 name: 'heart-outline',
                 type: 'ionicon',
                 color: 'white',
-                size: 20,
+                size: 25,
               }}
               onPress={() => greedy()}
             />
-            <Text style={styles.likesCount}>{likeCount}</Text>
             
 
             <View style={{ flexDirection: 'row', marginLeft: 8 }}>
-              {item.liked_by?.map((like: any) => (
-                <Image
+              {item.liked_by?.map((like: any) => {
+                return (
+                  <Image
                   key={like.user_id}
                   source={{ uri: like.avatar_url }}
                   style={styles.likedAvatar}
                 />
-              ))}
+                )
+              })}
             </View>
           </View>
-
-
-
         </View>
       </LinearGradient>
     );
@@ -133,7 +130,8 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     minWidth: '100%',
     borderRadius: 10,
-    marginBottom: 10
+    marginBottom: 10,
+    
   },
   avatar: {
     height: 50,
@@ -148,11 +146,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     marginBottom: 6,
+    paddingTop: 6,
+    paddingBottom: 6,
     color: 'white'
   },
   postContent: {
     fontSize: 16,
     color: 'white',
+    paddingBottom: 15,
   },
   likesRow: {
     flexDirection: 'row',
@@ -165,10 +166,9 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   likedAvatar: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#0A0A0A', // matches background for a clean outline
+    width: 35,
+    height: 35,
+    borderRadius: 5,
+    marginRight: 10
   }
 });
