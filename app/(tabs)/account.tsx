@@ -5,6 +5,9 @@ import { supabase } from '../../lib/supabase'
 import { SessionContext } from '../../lib/SessionContext'
 import { UserFeed } from '../../components/UserFeed'
 import * as ImagePicker from 'expo-image-picker'
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system/legacy'
+import { decode } from 'base64-arraybuffer'
 
 export default function Account() {
   const session = useContext(SessionContext)
@@ -19,6 +22,7 @@ export default function Account() {
   const [totalPoints, setTotalPoints] = useState(0)
   const [goodNoodleStars, setGoodNoodleStars] = useState(0)
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+  const [photoPath, setPhotoPath] = useState<string | undefined>(undefined)
   
 
   const getProfile = async () => {
@@ -42,6 +46,10 @@ export default function Account() {
         setTotalPoints(data.total_points)
         setGoodNoodleStars(data.stars)
       }
+
+      const { data: photoData } = supabase.storage.from('avatars').getPublicUrl(`public/${username}.png`);
+      setPhotoPath(photoData.publicUrl);
+      
     } catch (error) {
       if (error instanceof Error) Alert.alert(error.message)
     } finally {
@@ -73,12 +81,44 @@ export default function Account() {
       }
       const { error } = await supabase.from('profiles').upsert(updates, { onConflict: 'user_id' })
       if (error) throw error
+      console.log('photo path', photoPath)
       Alert.alert('Profile updated!')
     } catch (error) {
       if (error instanceof Error) Alert.alert(error.message)
     } finally {
       setLoading(false)
+      console.log('photo path', photoPath)
     }
+  }
+
+
+
+
+
+  const uploadImage = async (uri: string) => {
+    if (!uri) return
+
+    const base64File = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+
+    const { data, error } = await supabase
+      .storage
+      .from('avatars')
+      .upload(`public/${username}.png`, decode(base64File), {
+        contentType: 'image/png',
+        upsert: true
+      })
+    if (error) {
+      console.error('Error uploading image to supabase:', error)
+      return;
+    }
+
+    const { data: publicData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(`public/${username}.png`);
+
+    setPhotoPath(`${publicData.publicUrl}?t=${Date.now()}`);
+
+
   }
 
   const pickImage = async () => {
@@ -89,14 +129,16 @@ export default function Account() {
       quality: 1
     });
 
-    console.log(result)
-
     if (!result.canceled) {
-      setAvatarUrl(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      setAvatarUrl(uri);       // optional, for local preview
+      uploadImage(uri);        // pass URI directly
     }
   };
 
   if (!session?.user) return null
+
+
 
   return (
     <ScrollView
@@ -120,9 +162,9 @@ export default function Account() {
 
           <View style={{ alignItems: 'center', width: 200}}>
             <View style={{ alignItems: 'center',  }}>
-              {avatarUrl ? (
+              {photoPath ? (
                 <Image
-                  source={{ uri: avatarUrl }}
+                  source={{ uri: photoPath }}
                   style={styles.avatar}
                   resizeMode="cover"
                 />) : (<View style={styles.avatar}/>)}

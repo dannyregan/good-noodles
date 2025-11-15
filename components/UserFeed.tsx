@@ -41,7 +41,6 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
   };
 
   const renderItem = ({ item }: { item: any }) => {
-    console.log('url:', avatarUrl)
     const isLiked = likedPosts.has(item.post_id);
     const likeCount = postsState.find(p => p.post_id === item.post_id)?.likes ?? 0;
 
@@ -108,7 +107,7 @@ const styles = StyleSheet.create({
     minWidth: '100%',
     backgroundColor: 'white',
     borderRadius: 10,
-    marginBottom: 25
+    marginBottom: 10
   },
   avatar: {
     height: 50,
