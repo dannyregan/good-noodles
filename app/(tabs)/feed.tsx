@@ -24,21 +24,21 @@ export default function FeedScreen() {
   }, [refreshCount]);
 
   useEffect(() => {
-    const username = session.user.user_metadata?.username;
-    if (!username) return;
+    const userId = session.user.user_metadata?.id;
+    if (!userId) return;
     const { data: photoData } = supabase.storage
       .from('avatars')
-      .getPublicUrl(`public/${username}.png`);
+      .getPublicUrl(`public/${userId}.jpg`);
     setPhotoPath(photoData.publicUrl);
   }, [session.user]);
 
   const onRefresh = useCallback(() => {
     setRefreshCount(prev => prev + 1); // triggers Feed to refresh
-    const username = session.user.user_metadata?.username;
-    if (username) {
+    const userId = session.user.user_metadata?.id;
+    if (userId) {
       const { data: photoData } = supabase.storage
         .from('avatars')
-        .getPublicUrl(`public/${username}.png`);
+        .getPublicUrl(`public/${userId}.jpg`);
       setPhotoPath(photoData.publicUrl);
     }
   }, [session.user]);

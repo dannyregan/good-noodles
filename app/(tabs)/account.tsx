@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react'
-import { Image, StyleSheet, View, Alert, Text, ScrollView, RefreshControl, Button, TextInput, Dimensions } from 'react-native'
+import { Image, StyleSheet, View, Alert, Text, ScrollView, RefreshControl, Button, TextInput, Dimensions, StatusBar } from 'react-native'
 import {  Input, Icon } from '@rneui/themed'
 import { supabase } from '../../lib/supabase'
 import { SessionContext } from '../../lib/SessionContext'
@@ -13,7 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 
 export default function Account() {
   const session = useContext(SessionContext)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0) 
   const [username, setUsername] = useState('')
@@ -70,6 +70,7 @@ export default function Account() {
     await getProfile()
     setRefreshKey((prev) => prev + 1)
     setRefreshing(false)
+    console.log(loading)
   }
 
   async function compressPics(uri: string) {
@@ -177,6 +178,10 @@ export default function Account() {
 
 
   return (
+    <>
+    <StatusBar
+      barStyle='light-content'
+    />
     <ScrollView
       style={{ backgroundColor: '#0A0A0A' }}
       refreshControl={
@@ -187,13 +192,14 @@ export default function Account() {
       <View style={styles.container}>
 
           <View style={{ alignItems: 'center', }}>
+            <View style={[styles.avatar, {alignItems: 'center', justifyContent: 'center', height: bannerHeight, position: 'absolute'}]}><Text style={{color: 'white'}}>Loading Profile Photo...</Text></View>
             <View style={[styles.bannerImage, { alignItems: 'center', width: screenWidth, height: bannerHeight }]}>
-              {photoPath ? (
+              {!loading ? (
                 <Image
                   source={{ uri: photoPath || avatarUrl}}
                   style={[styles.avatar, {height: bannerHeight}]}
                   resizeMode="cover"
-                />) : (<View style={styles.avatar}/>)}
+                />) : (<View style={[styles.avatar, {alignItems: 'center', justifyContent: 'center', height: bannerHeight}]}></View>)}
                 {/* <Button
                   title={loading ? 'Loading...' : 'Choose Photo'}
                   onPress={pickImage}
@@ -350,6 +356,7 @@ export default function Account() {
         </View>
       </View>
     </ScrollView>
+    </>
   )
 }
 

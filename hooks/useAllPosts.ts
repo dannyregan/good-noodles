@@ -1,83 +1,3 @@
-// // hooks/useAllPosts.ts
-// import { useState, useEffect, useCallback } from 'react'
-// import { supabase } from '../lib/supabase'
-
-// export function useAllPosts(userId: string) {
-//   const [posts, setPosts] = useState<any[]>([])
-//   const [loading, setLoading] = useState(true)
-//   const [error, setError] = useState<string | null>(null)
-
-//   // Fetch posts function
-//   const fetchPosts = useCallback(async () => {
-//     try {
-//       setLoading(true)
-//       const { data, error } = await supabase
-//           .from('posts')
-//           .select(`
-//               *,
-//               user:profiles(user_id, username, avatar_url),
-//               tasks (task, base_points, like_points),
-//               likes (
-//                   user_id,
-//                   profiles!liked_user_id_fkey (username, avatar_url)
-//               )
-//               `)
-//           .order('created_at', { ascending: false })
-//       if (error) throw error
-
-//       const formattedPosts = await Promise.all(
-//           (data || []).map(async (post: any) => {
-//               const liked_by = await Promise.all(
-//                   (post.likes || []).map(async (like: { user_id: string, profiles: { username: string, avatar_url: string | null } }) => {
-//                       let avatar_url = like.profiles.avatar_url;
-
-//                       if (avatar_url) {
-//                           const { data: publicData } = supabase.storage
-//                               .from('avatars')
-//                               .getPublicUrl(`public/${avatar_url}`);
-//                           avatar_url = publicData.publicUrl;
-//                       }
-//                       return {
-//                           user_id: like.user_id,
-//                           username: like.profiles.username,
-//                           avatar_url
-//                       };
-//                   })
-//               );
-
-//               let user_avatar: string | undefined = undefined;
-//               if (post.user?.avatar_url) {
-//                 const { data: publicData } = supabase.storage
-//                   .from('avatars')
-//                   .getPublicUrl(`public/${post.user.avatar_url}`);
-//                 user_avatar = publicData.publicUrl;
-//               }
-
-//               return {
-//                   ...post,
-//                   liked_by,
-//                   user_avatar
-//               };
-//           })
-//       );
-
-//       setPosts(formattedPosts || [])
-//   } catch (err: any) {
-//       setError(err.message)
-//   } finally {
-//       setLoading(false)
-//   }
-//   }, [userId])
-
-//   // Initial load
-//   useEffect(() => {
-//     fetchPosts()
-//   }, [fetchPosts])
-
-//   return { posts, loading, error, refresh: fetchPosts }
-// }
-
-
 // hooks/useAllPosts.ts
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
@@ -99,7 +19,7 @@ export function useAllPosts(userId: string) {
           tasks (task, base_points, like_points),
           likes (
             user_id,
-            profiles (username, avatar_url)
+            profiles (username, avatar_url, small_avatar_url)
           )
         `)
         .order('created_at', { ascending: false });
@@ -111,19 +31,19 @@ export function useAllPosts(userId: string) {
           // Format liked_by array with public avatar URLs
           const liked_by = await Promise.all(
             (post.likes || []).map(async (like: any) => {
-              let avatar_url = like.profiles?.avatar_url || undefined;
+              let small_avatar_url = like.profiles?.small_avatar_url || undefined;
 
-              if (avatar_url) {
+              if (small_avatar_url) {
                 const { data: publicData } = supabase.storage
                   .from('avatars')
-                  .getPublicUrl(`public/${avatar_url}`);
-                avatar_url = publicData.publicUrl;
+                  .getPublicUrl(`public/${small_avatar_url}`);
+                small_avatar_url = publicData.publicUrl;
               }
 
               return {
                 user_id: like.user_id,
                 username: like.profiles?.username,
-                avatar_url,
+                small_avatar_url,
               };
             })
           );

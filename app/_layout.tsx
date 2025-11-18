@@ -15,7 +15,7 @@ export default function RootLayout() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       if (session?.user) {
-        router.replace('/(tabs)/account')
+        router.replace('/(tabs)/feed')
       } else {
         router.replace('/auth')
       }
@@ -25,7 +25,7 @@ export default function RootLayout() {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       if (session?.user) {
-        router.replace('/(tabs)/account')
+        router.replace('/(tabs)/feed')
       } else {
         router.replace('/auth')
       }

@@ -36,11 +36,6 @@ export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh, a
   const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
 
-  const fallbackAvatar = username
-    ? `https://uktkoaqigrufpjhiyvas.supabase.co/storage/v1/object/public/avatars/public/${username}.jpg`
-    : 'https://example.com/default-avatar.png'; // optional default
-
-
   // Sync local state with hooks
   useEffect(() => {
     if (posts.length && postsState.length === 0) {
@@ -73,7 +68,7 @@ const toggleLike = async (postId: number) => {
 
   const myLike = { 
     user_id: userId,
-    avatar_url: avatarUrl ?? fallbackAvatar, 
+    avatar_url: avatarUrl,
     username };
 
   // Optimistic UI update
@@ -122,8 +117,7 @@ const toggleLike = async (postId: number) => {
     const currentPost = postsState.find(p => p.post_id === item.post_id) || item;
 
     const isLiked = likedPosts.has(currentPost.post_id);
-
-    //const likeCount = postsState.find(p => p.post_id === item.post_id)?.likes ?? 0;
+    console.log(currentPost.user_avatar)
 
     const formattedDate = new Date(item.created_at).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -181,7 +175,7 @@ const toggleLike = async (postId: number) => {
                 return (
                   <Image
                   key={like.user_id}
-                  source={{ uri: like.avatar_url || fallbackAvatar }}
+                  source={{ uri: like.small_avatar_url }}
                   style={styles.likedAvatar}
                 />
                 )

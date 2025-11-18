@@ -34,7 +34,7 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
 
   const greedy = () => {
     Alert.alert(
-      'Greedy!',
+      'No',
       'You can\'t like your own posts.',
       [{
         text: 'Sorry'
