@@ -50,27 +50,19 @@ export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh, a
   useEffect(() => setLikedPosts(new Set(userLikes)), [userLikes]);
 
   // Refresh feed when refreshTrigger changes
-  // useEffect(() => {
-  //   const doRefresh = async () => {
-  //     setRefreshing(true);
-  //     setTimeout(async () => {
-  //       await refreshPosts();
-  //       await refreshLikes();
-  //     }, 1000)
-  //     setRefreshing(false);
-  //   };
-  //   doRefresh();
-  // }, [refreshTrigger]);
-
-   useEffect(() => {
+  useEffect(() => {
     const doRefresh = async () => {
+      console.log('refreshing!')
       setRefreshing(true);
-     // await refreshPosts();
-      //await refreshLikes();
+      setTimeout(async () => {
+        await refreshPosts();
+        await refreshLikes();
+      }, 1000)
       setRefreshing(false);
     };
     doRefresh();
   }, [refreshTrigger]);
+
 
 const toggleLike = async (postId: number) => {
   const isLiked = likedPosts.has(postId);
@@ -128,7 +120,6 @@ const toggleLike = async (postId: number) => {
 
   const renderItem = ({ item }: { item: Post }) => {
     const currentPost = postsState.find(p => p.post_id === item.post_id) || item;
-    console.log(currentPost)
 
     const isLiked = likedPosts.has(currentPost.post_id);
 
@@ -211,7 +202,6 @@ const toggleLike = async (postId: number) => {
       keyExtractor={item => item.post_id.toString()}
       renderItem={renderItem}
       extraData={postsState}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       scrollEnabled={false}
       contentContainerStyle={{ alignItems: 'center', width: '95%'}}
     />

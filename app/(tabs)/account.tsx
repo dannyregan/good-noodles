@@ -6,6 +6,7 @@ import { SessionContext } from '../../lib/SessionContext'
 import { UserFeed } from '../../components/UserFeed'
 import * as ImagePicker from 'expo-image-picker'
 import * as ImageManipulator from 'expo-image-manipulator';
+import * as ImageCompressor from 'react-native-compressor'
 import * as FileSystem from 'expo-file-system/legacy'
 import { decode } from 'base64-arraybuffer'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -49,7 +50,7 @@ export default function Account() {
         setGoodNoodleStars(data.stars)
       }
 
-      const { data: photoData } = supabase.storage.from('avatars').getPublicUrl(`public/${username}.png`);
+      const { data: photoData } = supabase.storage.from('avatars').getPublicUrl(`public/${session?.user.id}.jpg`);
       setPhotoPath(photoData.publicUrl);
       
     } catch (error) {
@@ -70,6 +71,22 @@ export default function Account() {
     setRefreshing(false)
   }
 
+  async function compressPic(uri: string) {
+    try {
+      const shortPic = await ImageManipulator.ImageManipulator.manipulate(uri)
+        .resize({ height: 600 })
+      const renderedPic = await shortPic.renderAsync()
+      const result = await renderedPic.saveAsync({
+        format: ImageManipulator.SaveFormat.JPEG
+      })
+      console.log('Success compressing image')
+      return result.uri;
+    } catch (err) {
+      console.error('Error compressing photo:', err)
+      return uri
+    }
+  }
+
   const updateProfile = async () => {
     if (!session?.user) return
     try {
@@ -77,7 +94,7 @@ export default function Account() {
       const updates = {
         user_id: session.user.id,
         username,
-        avatar_url: `${username}.png`,
+        avatar_url: `${session?.user.id}.jpg`,
         name,
         updated_at: new Date(),
       }
@@ -98,13 +115,15 @@ export default function Account() {
   const uploadImage = async (uri: string) => {
     if (!uri) return
 
-    const base64File = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+    const uriCompressed: string = await compressPic(uri)
 
+    const base64File = await FileSystem.readAsStringAsync(uriCompressed, { encoding: FileSystem.EncodingType.Base64 });
+    
     const { data, error } = await supabase
       .storage
       .from('avatars')
-      .upload(`public/${username}.png`, decode(base64File), {
-        contentType: 'image/png',
+      .upload(`public/${session?.user.id}.jpg`, decode(base64File), {
+        contentType: 'image/jpg',
         upsert: true
       })
     if (error) {
@@ -114,7 +133,7 @@ export default function Account() {
 
     const { data: publicData } = supabase.storage
       .from('avatars')
-      .getPublicUrl(`public/${username}.png`);
+      .getPublicUrl(`public/${session?.user.id}.jpg`);
 
     setPhotoPath(`${publicData.publicUrl}?t=${Date.now()}`);
 
@@ -125,8 +144,8 @@ export default function Account() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      aspect: [4,3],
-      quality: 1
+      aspect: [1,1],
+      quality: 1,
     });
 
     if (!result.canceled) {

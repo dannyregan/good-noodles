@@ -9,9 +9,19 @@ export default function FeedScreen() {
   const session = useContext(SessionContext);
   const [refreshCount, setRefreshCount] = useState(0);
   const [photoPath, setPhotoPath] = useState<string | undefined>(undefined)
+  const [refreshing, setRefreshing] = useState(false);
 
   if (!session?.user) return null;
 
+  useEffect(() => {
+    const doRefresh = async () => {
+      setRefreshing(true);
+      // await refreshPosts();
+      //await refreshLikes();
+      setRefreshing(false);
+    };
+    doRefresh();
+  }, [refreshCount]);
 
   useEffect(() => {
     const username = session.user.user_metadata?.username;
@@ -35,6 +45,7 @@ export default function FeedScreen() {
 
   return (
       <ScrollView
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         style={{ backgroundColor: '#0A0A0A',}}
         contentContainerStyle={{ paddingBottom: 40, alignItems: 'center'}}
       >
@@ -43,7 +54,7 @@ export default function FeedScreen() {
           <Feed 
             userId={session.user.id} 
             refreshTrigger={refreshCount} 
-            onRefresh={onRefresh}
+            onRefresh={() => {}}
             avatarUrl={photoPath}
             username={session.user.user_metadata?.username}
             
