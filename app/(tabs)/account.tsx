@@ -23,8 +23,9 @@ export default function Account() {
   const [pointsGiven, setPointsGiven] = useState(0)
   const [totalPoints, setTotalPoints] = useState(0)
   const [goodNoodleStars, setGoodNoodleStars] = useState(0)
-  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined)
   const [photoPath, setPhotoPath] = useState<string | undefined>(undefined)
+  const [smallPhotoPath, setSmallPhotoPath] = useState<string | undefined>(undefined)
   const screenWidth = Dimensions.get('window').width;
   const bannerHeight = 600;
   
@@ -71,19 +72,26 @@ export default function Account() {
     setRefreshing(false)
   }
 
-  async function compressPic(uri: string) {
+  async function compressPics(uri: string) {
     try {
-      const shortPic = await ImageManipulator.ImageManipulator.manipulate(uri)
+      const profilePic = await ImageManipulator.ImageManipulator.manipulate(uri)
         .resize({ height: 600 })
-      const renderedPic = await shortPic.renderAsync()
-      const result = await renderedPic.saveAsync({
+      const renderedProfilePic = await profilePic.renderAsync()
+      const profileResult = await renderedProfilePic.saveAsync({
         format: ImageManipulator.SaveFormat.JPEG
       })
-      console.log('Success compressing image')
-      return result.uri;
+      console.log('Success compressing profile image')
+
+      const smallPic = await ImageManipulator.ImageManipulator.manipulate(uri)
+        .resize({ height: 50, width: 50 })
+      const renderedSmallPic = await smallPic.renderAsync()
+      const smallResult = await renderedSmallPic.saveAsync({
+        format: ImageManipulator.SaveFormat.JPEG
+      })
+      return [profileResult.uri, smallResult.uri]
     } catch (err) {
       console.error('Error compressing photo:', err)
-      return uri
+      return [uri]
     }
   }
 
@@ -95,6 +103,7 @@ export default function Account() {
         user_id: session.user.id,
         username,
         avatar_url: `${session?.user.id}.jpg`,
+        small_avatar_url: `SMALL${session?.user.id}.jpg`,
         name,
         updated_at: new Date(),
       }
@@ -115,29 +124,37 @@ export default function Account() {
   const uploadImage = async (uri: string) => {
     if (!uri) return
 
-    const uriCompressed: string = await compressPic(uri)
+    const uriCompressed: string[] = await compressPics(uri)
 
-    const base64File = await FileSystem.readAsStringAsync(uriCompressed, { encoding: FileSystem.EncodingType.Base64 });
-    
-    const { data, error } = await supabase
-      .storage
-      .from('avatars')
-      .upload(`public/${session?.user.id}.jpg`, decode(base64File), {
-        contentType: 'image/jpg',
-        upsert: true
+    await Promise.all(
+      uriCompressed.map(async (uri, index) => {
+        const base64File = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+
+        const filename = index === 0 ? `public/${session?.user.id}.jpg` : `public/SMALL${session?.user.id}.jpg`
+
+        const { data, error } = await supabase
+          .storage
+          .from('avatars')
+          .upload(filename, decode(base64File), {
+            contentType: 'image/jpg',
+            upsert: true
+          })
+        if (error) {
+          console.error('Error uploading image to supabase:', index, error)
+          return;
+        }
+
+        const { data: publicData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(filename);
+
+        if (index === 0) {
+          setPhotoPath(`${publicData.publicUrl}?t=${Date.now()}`);
+        } else {
+          setSmallPhotoPath(`${publicData.publicUrl}?t=${Date.now()}`);
+        }
       })
-    if (error) {
-      console.error('Error uploading image to supabase:', error)
-      return;
-    }
-
-    const { data: publicData } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(`public/${session?.user.id}.jpg`);
-
-    setPhotoPath(`${publicData.publicUrl}?t=${Date.now()}`);
-
-
+    );
   }
 
   const pickImage = async () => {
@@ -323,7 +340,7 @@ export default function Account() {
         </View> */}
 
         <View style={{ flex: 1, padding: 16 }}>
-          <UserFeed userId={session.user.id} refreshTrigger={refreshKey} avatarUrl={photoPath} username={username} />
+          <UserFeed userId={session.user.id} refreshTrigger={refreshKey} avatarUrl={photoPath} smallAvatarUrl={smallPhotoPath} username={username} />
         </View>
 
         <View style={[ styles.verticallySpaced, { marginTop: 20, alignSelf: 'center' }]}>

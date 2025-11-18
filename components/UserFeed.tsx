@@ -11,10 +11,11 @@ type UserFeedProps = {
   userId: string;
   refreshTrigger?: number | undefined;
   avatarUrl: string | undefined;
+  smallAvatarUrl: string | undefined;
   username: string | undefined;
 };
 
-export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avatarUrl, username }) => {
+export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avatarUrl, smallAvatarUrl, username }) => {
   const { posts, loading, error } = useUserPosts(userId, refreshTrigger);
   const { likedPosts: userLikes, refresh } = useUserLikes(userId);
 
@@ -98,7 +99,7 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
                 return (
                   <Image
                   key={like.user_id}
-                  source={{ uri: like.avatar_url }}
+                  source={{ uri: like.small_avatar_url }}
                   style={styles.likedAvatar}
                 />
                 )
