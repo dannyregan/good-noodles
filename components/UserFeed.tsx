@@ -64,7 +64,7 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
         <View style={styles.postContainer} >
           <View style={{flexDirection: 'row', }}>
             <Image
-              source={{ uri: avatarUrl }}
+              source={{ uri: smallAvatarUrl }}
               style={styles.avatar}
               resizeMode="cover"
             />

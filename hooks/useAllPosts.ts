@@ -54,7 +54,7 @@ export function useAllPosts(userId: string) {
           if (post.user_id) {
             const { data: userData } = await supabase
               .from('profiles')
-              .select('avatar_url, username')
+              .select('small_avatar_url, username')
               .eq('user_id', post.user_id)
               .single();
 
@@ -62,10 +62,10 @@ export function useAllPosts(userId: string) {
               poster_username = userData.username;
             }
 
-            if (userData?.avatar_url) {
+            if (userData?.small_avatar_url) {
               const { data: publicData } = supabase.storage
                 .from('avatars')
-                .getPublicUrl(`public/${userData.avatar_url}`);
+                .getPublicUrl(`public/${userData.small_avatar_url}`);
               user_avatar = publicData.publicUrl;
             }
           }

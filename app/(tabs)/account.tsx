@@ -35,7 +35,7 @@ export default function Account() {
       setLoading(true)
       const { data, error, status } = await supabase
         .from('profiles')
-        .select('username, avatar_url, name, tasks_completed, total_points, points_given, points_received, stars')
+        .select('username, avatar_url, small_avatar_url, name, tasks_completed, total_points, points_given, points_received, stars')
         .eq('user_id', session?.user.id)
         .single()
 
@@ -51,6 +51,8 @@ export default function Account() {
         setGoodNoodleStars(data.stars)
       }
 
+      const { data: smallPhotoData } = supabase.storage.from('avatars').getPublicUrl(`public/SMALL${session?.user.id}.jpg`);
+      setSmallPhotoPath(smallPhotoData.publicUrl);
       const { data: photoData } = supabase.storage.from('avatars').getPublicUrl(`public/${session?.user.id}.jpg`);
       setPhotoPath(photoData.publicUrl);
       
@@ -84,7 +86,7 @@ export default function Account() {
       console.log('Success compressing profile image')
 
       const smallPic = await ImageManipulator.ImageManipulator.manipulate(uri)
-        .resize({ height: 50, width: 50 })
+        .resize({ height: 150, width: 150 })
       const renderedSmallPic = await smallPic.renderAsync()
       const smallResult = await renderedSmallPic.saveAsync({
         format: ImageManipulator.SaveFormat.JPEG
@@ -199,7 +201,12 @@ export default function Account() {
                   source={{ uri: photoPath || avatarUrl}}
                   style={[styles.avatar, {height: bannerHeight}]}
                   resizeMode="cover"
-                />) : (<View style={[styles.avatar, {alignItems: 'center', justifyContent: 'center', height: bannerHeight}]}></View>)}
+                />) : (
+                <Image
+                  source={{ uri: smallPhotoPath || avatarUrl}}
+                  style={[styles.avatar, {height: bannerHeight}]}
+                  resizeMode="cover"
+                />)}
                 {/* <Button
                   title={loading ? 'Loading...' : 'Choose Photo'}
                   onPress={pickImage}

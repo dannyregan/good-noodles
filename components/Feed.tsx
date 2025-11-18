@@ -117,7 +117,6 @@ const toggleLike = async (postId: number) => {
     const currentPost = postsState.find(p => p.post_id === item.post_id) || item;
 
     const isLiked = likedPosts.has(currentPost.post_id);
-    console.log(currentPost.user_avatar)
 
     const formattedDate = new Date(item.created_at).toLocaleDateString('en-US', {
       year: 'numeric',

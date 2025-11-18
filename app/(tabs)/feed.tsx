@@ -28,7 +28,7 @@ export default function FeedScreen() {
     if (!userId) return;
     const { data: photoData } = supabase.storage
       .from('avatars')
-      .getPublicUrl(`public/${userId}.jpg`);
+      .getPublicUrl(`public/SMALL${userId}.jpg`);
     setPhotoPath(photoData.publicUrl);
   }, [session.user]);
 
@@ -38,7 +38,7 @@ export default function FeedScreen() {
     if (userId) {
       const { data: photoData } = supabase.storage
         .from('avatars')
-        .getPublicUrl(`public/${userId}.jpg`);
+        .getPublicUrl(`public/SMALL${userId}.jpg`);
       setPhotoPath(photoData.publicUrl);
     }
   }, [session.user]);
