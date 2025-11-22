@@ -41,6 +41,7 @@ export default function Account({ userId: propUserId }: AccountProps) {
   
 
   const getProfile = async () => {
+    console.log(userId)
     try {
       setLoading(true)
       const { data, error, status } = await supabase
@@ -75,7 +76,7 @@ export default function Account({ userId: propUserId }: AccountProps) {
 
   useEffect(() => {
     if (session?.user) getProfile()
-  }, [session, photoPath])
+  }, [session, photoPath, userId])
 
   const onRefresh = async () => {
     setRefreshing(true)
@@ -363,7 +364,7 @@ export default function Account({ userId: propUserId }: AccountProps) {
         </View> */}
 
         <View style={{ flex: 1, padding: 16 }}>
-          <UserFeed userId={session.user.id} refreshTrigger={refreshKey} avatarUrl={photoPath} smallAvatarUrl={smallPhotoPath} username={username} />
+          <UserFeed userId={userId} refreshTrigger={refreshKey} avatarUrl={photoPath} smallAvatarUrl={smallPhotoPath} username={username} />
         </View>
 
         <View style={[ styles.verticallySpaced, { marginTop: 20, alignSelf: 'center' }]}>
