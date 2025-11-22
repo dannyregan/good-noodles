@@ -1,11 +1,12 @@
 // components/UserFeed.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert, Image } from 'react-native';
 import { Button } from '@rneui/themed';
 import { useUserPosts } from '../hooks/useUserPosts';
 import { useUserLikes } from '../hooks/useUserLikes';
 import { supabase } from '../lib/supabase';
 import { LinearGradient } from 'expo-linear-gradient'
+import { SessionContext } from '../lib/SessionContext';
 
 type UserFeedProps = {
   userId: string;
@@ -16,8 +17,9 @@ type UserFeedProps = {
 };
 
 export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avatarUrl, smallAvatarUrl, username }) => {
+  const session = useContext(SessionContext);
   const { posts, loading, error } = useUserPosts(userId, refreshTrigger);
-  const { likedPosts: userLikes, refresh } = useUserLikes(userId);
+  const { likedPosts: userLikes, refresh } = useUserLikes(session?.user.id);
 
   // Local state for reactive UI
   const [postsState, setPostsState] = useState(posts);
@@ -41,6 +43,75 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
       }]
     )
   };
+
+
+
+
+
+
+
+
+  const toggleLike = async (postId: number) => {
+    Alert.alert('Like/Unlike from the main feed only.')
+    // const isLiked = likedPosts.has(postId);
+  
+    // // Store current state for rollback
+    // const prevLikedPosts = new Set(likedPosts);
+    // const prevPostsState = [...postsState];
+  
+    // const myLike = { 
+    //   user_id: userId,
+    //   avatar_url: avatarUrl,
+    //   username };
+  
+    // // Optimistic UI update
+    // setLikedPosts(prev => {
+    //   const copy = new Set(prev);
+    //   if (isLiked) copy.delete(postId);
+    //   else copy.add(postId);
+    //   return copy;
+    // });
+  
+    // setPostsState(prev =>
+    //   prev.map(post => {
+    //     if (post.post_id === postId) {
+    //       const updatedLikedBy = isLiked
+    //         ? (post.liked_by || []).filter((like: { user_id: string, avatar_url: string }) => like.user_id !== userId)
+    //         : [...(post.liked_by || []), myLike];
+    //       return { ...post, liked_by: updatedLikedBy }; // new object
+    //     }
+    //     return post;
+    //   })
+    // );
+  
+    // // Fire-and-forget backend call
+    // try {
+    //   const { error } = await supabase.rpc('togglelike', {
+    //     is_liked: isLiked,
+    //     p_user_id: userId,
+    //     p_post_id: postId,
+    //   });
+  
+    //   if (error) {
+    //     throw error;
+    //   }
+    // } catch (err) {
+    //   console.error(err);
+    //   Alert.alert('Error toggling like. Reverting...');
+  
+    //   // Roll back UI
+    //   setLikedPosts(prevLikedPosts);
+    //   setPostsState(prevPostsState);
+    // }
+  };
+
+
+
+
+
+
+
+
 
   const renderItem = ({ item }: { item: any }) => {
     const isLiked = likedPosts.has(item.post_id);
@@ -85,12 +156,12 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
             <Button
               type="clear"
               icon={{
-                name: 'heart-outline',
+                name: isLiked ? 'heart' : 'heart-outline',
                 type: 'ionicon',
-                color: 'white',
+                color: isLiked ? 'rgb(242, 12, 144, 1)' : 'white',
                 size: 25,
               }}
-              onPress={() => greedy()}
+              onPress={() => userId === session?.user.id ? greedy() : toggleLike(item.post_id) }
             />
             
 

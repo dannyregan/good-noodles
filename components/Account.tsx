@@ -5,12 +5,11 @@ import { supabase } from '../lib/supabase'
 import { SessionContext } from '../lib/SessionContext'
 import { UserFeed } from '../components/UserFeed'
 import * as ImagePicker from 'expo-image-picker'
-import * as ImageManipulator from 'expo-image-manipulator';
-import * as ImageCompressor from 'react-native-compressor'
+import * as ImageManipulator from 'expo-image-manipulator'
 import * as FileSystem from 'expo-file-system/legacy'
 import { decode } from 'base64-arraybuffer'
 import { LinearGradient } from 'expo-linear-gradient'
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router"
 
 type AccountProps = {
   userId?: string; // optional — will default to current user
@@ -41,7 +40,6 @@ export default function Account({ userId: propUserId }: AccountProps) {
   
 
   const getProfile = async () => {
-    console.log(userId)
     try {
       setLoading(true)
       const { data, error, status } = await supabase
@@ -236,26 +234,28 @@ export default function Account({ userId: propUserId }: AccountProps) {
                     height: bannerHeight
                   }}
                 />
-
-                <View style={{ position: 'absolute', top: 547, right: 20, borderRadius: 10, zIndex: 999}} >
-                  <Button
-                    title={loading ? 'Loading...' : 'Save'}
-                    onPress={updateProfile}
-                    disabled={loading}
-                    color='rgb(0, 122, 255)'
-                  />
-                </View>
-
-                <View
-                  style={{ position: 'absolute', zIndex: 999, top: 550, left: 20}}>
-                  <Icon
-                    type='ionicon'
-                    name='camera-outline'
-                    size={30}
-                    color='rgb(0, 122, 255)'
-                    onPress={pickImage}
-                  />
-                </View>
+                {session?.user.id === userId && (
+                    <>
+                    <View style={{ position: 'absolute', top: 547, right: 20, borderRadius: 10, zIndex: 999}} >
+                    <Button
+                        title={loading ? 'Loading...' : 'Save'}
+                        onPress={updateProfile}
+                        disabled={loading}
+                        color='rgb(0, 122, 255)'
+                    />
+                    </View>
+                    <View
+                    style={{ position: 'absolute', zIndex: 999, top: 550, left: 20}}>
+                    <Icon
+                        type='ionicon'
+                        name='camera-outline'
+                        size={30}
+                        color='rgb(0, 122, 255)'
+                        onPress={pickImage}
+                    />
+                    </View>
+                    </>
+                )}
 
 
               <View style={{
@@ -367,11 +367,14 @@ export default function Account({ userId: propUserId }: AccountProps) {
           <UserFeed userId={userId} refreshTrigger={refreshKey} avatarUrl={photoPath} smallAvatarUrl={smallPhotoPath} username={username} />
         </View>
 
-        <View style={[ styles.verticallySpaced, { marginTop: 20, alignSelf: 'center' }]}>
-          <Button 
-            title="Sign Out" 
-            onPress={() => supabase.auth.signOut()} />
-        </View>
+        {session?.user.id === userId && (
+            <View style={[styles.verticallySpaced, { marginTop: 20, alignSelf: 'center' }]}>
+                <Button 
+                title="Sign Out" 
+                onPress={() => supabase.auth.signOut()} 
+                />
+            </View>
+        )}
       </View>
     </ScrollView>
     </>

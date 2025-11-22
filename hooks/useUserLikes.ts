@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 
-export function useUserLikes(userId: string) {
+export function useUserLikes(userId: string | undefined) {
   const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
