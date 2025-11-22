@@ -1,9 +1,10 @@
 
-import { StyleSheet, View, Text } from 'react-native'
+import { StyleSheet, View, Text, Dimensions} from 'react-native'
 
-export default function Feed() {
+const Feed = () => {
+  const screenHeight = Dimensions.get('window').height;
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {height: screenHeight}]}>
       <View>
         <Text style={styles.text}>Welcome to Good Noodles</Text>
       </View>
@@ -23,3 +24,5 @@ const styles = StyleSheet.create({
     color: 'white'
   }
 })
+
+export default Feed;

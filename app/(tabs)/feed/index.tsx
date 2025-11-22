@@ -1,11 +1,11 @@
 import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { StyleSheet, RefreshControl, ScrollView, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feed } from '../../components/Feed';
-import { SessionContext } from '../../lib/SessionContext';
-import { supabase } from '../../lib/supabase'
+import { Feed } from '../../../components/Feed';
+import { SessionContext } from '../../../lib/SessionContext';
+import { supabase } from '../../../lib/supabase'
 
-export default function FeedScreen() {
+const FeedScreen = () => {
   const session = useContext(SessionContext);
   const [refreshCount, setRefreshCount] = useState(0);
   const [photoPath, setPhotoPath] = useState<string | undefined>(undefined)
@@ -74,3 +74,5 @@ const styles = StyleSheet.create({
   }
 
 })
+
+export default FeedScreen;

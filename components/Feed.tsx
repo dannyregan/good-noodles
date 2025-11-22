@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, RefreshControl, Image, } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Image, } from 'react-native';
 import { Button } from '@rneui/themed';
 import { useAllPosts } from '../hooks/useAllPosts';
 import { useUserLikes } from '../hooks/useUserLikes';
 import { supabase } from '../lib/supabase';
-import { LinearGradient } from 'expo-linear-gradient'
+import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router'
+//import { createStackNavigator } from '@react-navigation/stack'
+//import { Account } from '../components/Account'
+import { StackNavigationProp } from '@react-navigation/stack';
+
 
 type FeedProps = {
   userId: string;
@@ -14,9 +20,17 @@ type FeedProps = {
   username: string | undefined;
 };
 
+type FeedStackParamList = {
+  index: undefined;                 // feed main screen
+  'account/[userId]': { userId: string };  // user account screen
+};
+
+
 export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh, avatarUrl, username }) => {
   const { posts, loading, error, refresh: refreshPosts } = useAllPosts(userId);
   const { likedPosts: userLikes, refresh: refreshLikes } = useUserLikes(userId);
+  const navigation = useNavigation<StackNavigationProp<FeedStackParamList>>();
+
 
   type Post = {
     post_id: number;
@@ -112,6 +126,13 @@ const toggleLike = async (postId: number) => {
   }
 };
 
+  // function findAccount() {
+  //   return (
+  //     <Stack.Navigator>
+  //       <Stack.Screen name="Profile" component={Account} />
+  //     </Stack.Navigator>
+  //   );
+  // }
 
   const renderItem = ({ item }: { item: Post }) => {
     const currentPost = postsState.find(p => p.post_id === item.post_id) || item;
@@ -137,7 +158,10 @@ const toggleLike = async (postId: number) => {
       >
 
         <View style={styles.postContainer} >
-          <View style={{flexDirection: 'row', }}>
+          <TouchableOpacity 
+            style={{flexDirection: 'row', }}
+            onPress={() => navigation.push('account/[userId]', { userId: currentPost.user_id })}
+            >
             <Image
               source={{ uri: currentPost.user_avatar }}
               style={styles.avatar}
@@ -147,7 +171,7 @@ const toggleLike = async (postId: number) => {
               <Text style={{ fontWeight: 'bold', color: 'white', paddingBottom: 4}}>{currentPost.poster_username}</Text>
               <Text style={styles.dateText}>{formattedDate}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           <View style={{paddingTop: 8, }}>
             <Text style={styles.postTitle}>{item.tasks?.task || 'No Task'}</Text>
@@ -172,11 +196,14 @@ const toggleLike = async (postId: number) => {
             <View style={{ flexDirection: 'row', marginLeft: 8 }}>
               {currentPost.liked_by?.map((like: any) => {
                 return (
-                  <Image
-                  key={like.user_id}
-                  source={{ uri: like.small_avatar_url }}
-                  style={styles.likedAvatar}
-                />
+                  <TouchableOpacity 
+                    key={like.user_id}
+                    onPress={() => navigation.push('account/[userId]', { userId: like.user_id })}>
+                    <Image
+                    source={{ uri: like.small_avatar_url }}
+                    style={styles.likedAvatar}
+                    />
+                  </TouchableOpacity>
                 )
               })}
             </View>
@@ -188,6 +215,7 @@ const toggleLike = async (postId: number) => {
 
   if (error) return <Text>Feed Error: {error}</Text>;
   if (!postsState.length) return <Text>No posts yet.</Text>;
+  if (loading) return <Text style={{color: 'white'}}>Loading...</Text>;
 
   return (
     <FlatList
