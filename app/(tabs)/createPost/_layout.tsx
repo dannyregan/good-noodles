@@ -1,11 +1,11 @@
 import { Stack } from 'expo-router';
 
-export default function FeedLayout() {
+export default function CreatePostLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />                    
       <Stack.Screen
-        name="account/[userId]"                        
+        name="comment/comment"                        
         options={{ presentation: 'card' }}           
       />
     </Stack>

@@ -7,18 +7,10 @@ import {
   FlatList,
   StyleSheet,
 } from "react-native";
+import { router } from 'expo-router'
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-interface Task {
-  base_points: number;
-  categories: {
-    category: string;
-  }
-  category_id: number;
-  like_points: number;
-  task: string;
-  task_id: number;
-  task_name: string;
-}
 
 interface CategoryItem {
   name: string;
@@ -26,28 +18,40 @@ interface CategoryItem {
 }
 
 interface ModalDropdownProps {
-  taskData: Task[],
-  categories: Record<string, number>,
-  handleSelectedCategory: (selected: CategoryItem) => void;
+  items: Record<string, number>,
+  visible: boolean;
+  setVisible: (v: boolean) => void;
   handleSelectedTask: (selected: CategoryItem) => void;
-  placeholder: string,
-  selectedItem: string | undefined
+  selectedItem: string | undefined;
 }
 
-export const ModalDropdown: React.FC<ModalDropdownProps> = ({ taskData, categories, handleSelectedCategory, handleSelectedTask, placeholder, selectedItem }) => {
+type FeedStackParamList = {
+  index: undefined;                 // feed main screen
+  '/createPost/comment': { };  // user account screen
+};
+
+export const ModalDropdown: React.FC<ModalDropdownProps> = ({ 
+  items,
+  visible,
+  setVisible,
+  handleSelectedTask, 
+  selectedItem
+}) => {
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [categoryNames, setCategoryNames] = useState<CategoryItem[]>([]);
   const [selection, setSelection] = useState<CategoryItem | null>(null);  
+
+  const navigation = useNavigation<StackNavigationProp<FeedStackParamList>>();
   
 
   useEffect(() => {
-    const categoryArray: CategoryItem[] = Object.entries(categories)
+    const categoryArray: CategoryItem[] = Object.entries(items)
       .map(([name, id]) => ({ name, id }))
       .sort((a, b) => a.name.localeCompare(b.name));
     setCategoryNames(categoryArray);
     setSelection(null);
-  }, [categories]);
+  }, [items]);
 
   useEffect(() => {
     if (!selectedItem) {
@@ -55,22 +59,21 @@ export const ModalDropdown: React.FC<ModalDropdownProps> = ({ taskData, categori
     }
   }, [selectedItem]);
 
-   const toggleModal = () => setModalVisible(!isModalVisible);
-
   const handleSelect = (item: CategoryItem) => {
     setSelection(item);
-    toggleModal();
+    setVisible(false);
+    router.push('/createPost/comment', { })
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={toggleModal}>
+      {/* <TouchableOpacity style={styles.button} onPress={toggleModal}>
         <Text style={styles.buttonText}>
           {selection ? selection.name : (placeholder)}
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
-      <Modal visible={isModalVisible} transparent animationType="slide">
+      <Modal visible={visible} transparent animationType="slide">
         <View style={styles.modalBackground}>
           <View style={styles.modalContent}>
             <FlatList
@@ -80,11 +83,7 @@ export const ModalDropdown: React.FC<ModalDropdownProps> = ({ taskData, categori
                 <TouchableOpacity
                   style={styles.option}
                   onPress={() => {
-                    if (placeholder === 'Category') {
-                      handleSelectedCategory(item)
-                    } else {
-                      handleSelectedTask(item)
-                    }
+                    handleSelectedTask(item)
                     handleSelect(item)
                   }
                   }
@@ -93,7 +92,7 @@ export const ModalDropdown: React.FC<ModalDropdownProps> = ({ taskData, categori
                 </TouchableOpacity>
               )}
             />
-            <TouchableOpacity style={styles.closeButton} onPress={toggleModal}>
+            <TouchableOpacity style={styles.closeButton} onPress={() => setVisible(false)}>
               <Text style={styles.closeText}>Close</Text>
             </TouchableOpacity>
           </View>
