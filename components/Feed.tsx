@@ -83,7 +83,6 @@ export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh, a
       try {
         await refreshPosts();  // fetch latest posts
         await refreshLikes();  // fetch latest likes
-        setPostsState(posts); 
       } catch (err) {
         console.error('Error refreshing feed:', err);
       } finally {
@@ -93,6 +92,10 @@ export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh, a
 
     doRefresh();
   }, [refreshTrigger]);
+
+  useEffect(() => {
+    setPostsState(posts);
+  }, [posts])
 
 
 const toggleLike = async (postId: number) => {
