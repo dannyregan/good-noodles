@@ -8,8 +8,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { router } from 'expo-router'
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+// import { useNavigation } from '@react-navigation/native';
+// import { StackNavigationProp } from '@react-navigation/stack';
 
 
 interface CategoryItem {
@@ -23,6 +23,9 @@ interface ModalDropdownProps {
   setVisible: (v: boolean) => void;
   handleSelectedTask: (selected: CategoryItem) => void;
   selectedItem: string | undefined;
+  colors: Record<string, string>;
+  // comment: string | null;
+  // onChangeText: (setComment: string) => void;
 }
 
 type FeedStackParamList = {
@@ -35,14 +38,17 @@ export const ModalDropdown: React.FC<ModalDropdownProps> = ({
   visible,
   setVisible,
   handleSelectedTask, 
-  selectedItem
+  selectedItem,
+  colors,
+  // comment,
+  // onChangeText
 }) => {
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [categoryNames, setCategoryNames] = useState<CategoryItem[]>([]);
   const [selection, setSelection] = useState<CategoryItem | null>(null);  
 
-  const navigation = useNavigation<StackNavigationProp<FeedStackParamList>>();
+  // const navigation = useNavigation<StackNavigationProp<FeedStackParamList>>();
   
 
   useEffect(() => {
@@ -60,9 +66,12 @@ export const ModalDropdown: React.FC<ModalDropdownProps> = ({
   }, [selectedItem]);
 
   const handleSelect = (item: CategoryItem) => {
+    // router.push({
+    //   pathname: '/createPost/comment',
+    //   params: { name: item.name}
+    // })
     setSelection(item);
     setVisible(false);
-    router.push('/createPost/comment', { })
   };
 
   return (
@@ -75,7 +84,13 @@ export const ModalDropdown: React.FC<ModalDropdownProps> = ({
 
       <Modal visible={visible} transparent animationType="slide">
         <View style={styles.modalBackground}>
-          <View style={styles.modalContent}>
+          <View 
+            style={[styles.modalContent, {
+              borderColor: selectedItem !== undefined ? colors[selectedItem] : 'white',
+              borderWidth: 1
+              }
+            ]}
+          >
             <FlatList
               data={categoryNames}
               keyExtractor={(item) => item.id.toString()}
@@ -88,12 +103,14 @@ export const ModalDropdown: React.FC<ModalDropdownProps> = ({
                   }
                   }
                 >
-                  <Text style={styles.optionText}>{item.name}</Text>
+                  <Text style={[styles.optionText,]}>{item.name}</Text>
                 </TouchableOpacity>
               )}
             />
             <TouchableOpacity style={styles.closeButton} onPress={() => setVisible(false)}>
-              <Text style={styles.closeText}>Close</Text>
+              <Text style={[styles.closeText, {
+                color: selectedItem !== undefined ? colors[selectedItem] : 'white'
+              }]}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -117,32 +134,34 @@ const styles = StyleSheet.create({
   },
   modalBackground: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
     width: "80%",
-    backgroundColor: "white",
+    backgroundColor: "#0a0a0a",
     borderRadius: 10,
     padding: 20,
   },
   option: {
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    borderBottomColor: "#444",
   },
   optionText: {
     fontSize: 16,
+    color: 'white'
   },
   closeButton: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: "#e74c3c",
+    //backgroundColor: "#ff1ec0",
     borderRadius: 5,
   },
   closeText: {
-    color: "white",
     textAlign: "center",
+    fontWeight: 700,
+    fontSize: 18
   },
 });

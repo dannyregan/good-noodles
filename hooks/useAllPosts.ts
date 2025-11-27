@@ -16,7 +16,7 @@ export function useAllPosts(userId: string) {
         .from('posts')
         .select(`
           *,
-          tasks (task, base_points, like_points),
+          tasks (task, base_points, like_points, category_id),
           likes (
             user_id,
             profiles (username, avatar_url, small_avatar_url)

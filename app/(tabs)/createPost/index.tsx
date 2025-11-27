@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { StyleSheet, View, TextInput, Text, Button, Alert, ScrollView, Modal, Keyboard, FlatList, TouchableOpacity, Dimensions } from 'react-native'
 import { Input } from '@rneui/themed'
@@ -6,6 +6,9 @@ import { Session } from '@supabase/supabase-js'
 import { ModalDropdown } from '../../../components/Dropdown'
 import { SessionContext } from '../../../lib/SessionContext';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient'
+import { router } from 'expo-router'
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Feed() {
   interface Item {
@@ -45,7 +48,38 @@ export default function Feed() {
   Professional: 'briefcase',
   Vibes: 'walk',
   'Video Games': 'game-controller',
-};
+  };
+  const categoryColorsDark: Record<string, string> = {
+  Animals: 'rgb(220, 24, 83)',
+  Chores: 'rgb(255, 132, 0)',
+  Food: 'rgb(255, 204, 0)',
+  Friends: 'rgb(0, 129, 210)',
+  Games: 'rgb(82, 57, 225)',
+  Health: 'rgb(255, 0, 0)',
+  Money: 'rgb(14, 139, 0)',
+  Outdoors: 'rgb(0, 147, 170)',
+  Plants: 'rgb(98, 147, 0)',
+  Productivity: 'rgb(12, 0, 141)',
+  Professional: 'rgb(118, 193, 255)',
+  Vibes: 'rgb(185, 0, 132)',
+  'Video Games': 'rgb(104, 0, 201)',
+  };
+  const categoryColorsLight: Record<string, string> = {
+  Animals: 'rgb(230, 123, 155)',
+  Chores: 'rgb(253, 202, 107)',
+  Food: 'rgb(255, 220, 79)',
+  Friends: 'rgb(159, 208, 255)',
+  Games: 'rgb(160, 149, 221)',
+  Health: 'rgb(255, 137, 137)',
+  Money: 'rgb(130, 244, 117)',
+  Outdoors: 'rgb(125, 238, 255)',
+  Plants: 'rgb(210, 255, 121)',
+  Productivity: 'rgb(134, 123, 255)',
+  Professional: 'rgb(70, 130, 180)',
+  Vibes: 'rgb(255, 118, 216)',
+  'Video Games': 'rgb(185, 109, 255)',
+  };
+
 
   const tempDict: Record<string, number> = {}
 
@@ -101,6 +135,12 @@ export default function Feed() {
   useEffect(() => {
     fetchCategories()
   }, [])
+
+  useFocusEffect(
+  useCallback(() => {
+    setSelectedTask(null); // reset selected task whenever screen is focused
+  }, [])
+);
 
   const submitPost = async () => {
     try {
@@ -175,22 +215,51 @@ export default function Feed() {
 
 
   const categoryBox = (item: { category: string, categoryId: number }) => {
-    const iconName = categoryIcons[item.category]
+    const iconName = categoryIcons[item.category];
+    const iconColorDark = categoryColorsDark[item.category]
+    const iconColorLight = categoryColorsLight[item.category]
     return (
+      <View
+        style={{
+          shadowColor: iconColorDark,
+          shadowOpacity: 0.6,
+          shadowRadius: 15,
+          shadowOffset: { width: 0, height: 3 },
+          elevation: 6, // Android shadow
+          borderRadius: 10, // match TouchableOpacity
+          marginBottom: 12,
+        }}
+      >
       <TouchableOpacity
-        style={[styles.categoryBox, {height: screenHeight/8, width: screenWidth/2.5}]}
+        style={{
+          borderColor: iconColorLight,
+          borderWidth: 2,
+          height: screenHeight / 5.5,
+          width: screenWidth / 2.3,
+          borderRadius: 10,
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          backgroundColor: '#0a0a0a',
+        }}
         onPress={() => {
-          console.log('CATEGORY ID', item.categoryId)
           handleSelectedCategory({
             id: item.categoryId,
             name: item.category})
         }}
       >
-        <Text style={{fontSize: 18, padding: 15}}>{item.category}</Text>
-        <View style={{marginBottom: 15}}>
-          <Ionicons name={iconName} size={40} color="black" />
-        </View>
+          <View style={{marginTop: 20}}>
+            <LinearGradient
+              colors={[iconColorLight, iconColorDark]} // bright electric pink gradient
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.iconCircle}
+            >
+              <Ionicons name={iconName} size={40} color='white' />
+            </LinearGradient>
+          </View>
+          <Text style={{fontSize: 18, fontWeight: 700, color: iconColorLight, paddingBottom: 10}}>{item.category}</Text>
       </TouchableOpacity>
+      </View>
     )
   }
 
@@ -199,8 +268,9 @@ export default function Feed() {
 
   return (
     <>
-        <ScrollView style={styles.container} keyboardShouldPersistTaps='handled'>
-          <View style={styles.verticallySpaced}>
+      <ScrollView style={styles.container} keyboardShouldPersistTaps='handled'>
+        <View style={styles.verticallySpaced}>
+          {!selectedTask && (
             <FlatList
               data={categoryArray}
               keyExtractor={(item) => item.categoryId.toString()}
@@ -208,48 +278,46 @@ export default function Feed() {
               scrollEnabled={false}
               numColumns={2} // this makes it a two-column grid
               columnWrapperStyle={{ justifyContent: 'space-around', marginBottom: 12 }}
-              contentContainerStyle={{ paddingBottom: 20 }}
             />
-            <ModalDropdown
-              items={tasks} 
-              visible={modalVisibility}
-              setVisible={setModalVisibility}
-              handleSelectedTask={handleSelectedTask}
-              selectedItem={selectedCategory?.name} />
-            {/* <Text>Choose your task.</Text>
-            <ModalDropdown
-              items={tasks} 
-              handleSelectedTask={handleSelectedTask}
-              selectedItem={selectedTask?.name} /> */}
-            <Text>Add your comment.</Text>
-            <TextInput
-              style={styles.textInput}
-              value={comment ? comment : ''}
-              onChangeText={setComment} 
-              placeholder='Comment'
-              onBlur={Keyboard.dismiss}
-              multiline={true}
-            />
-            <Text>-Post Button-</Text>
-            <Button
-              title='Post'
-              onPress={submitPost}
-            />
-          </View>
-        </ScrollView>
-      
-      <Modal
-        transparent
-        visible={loading}
-        animationType="fade"
-        onRequestClose={() => {}}
-      >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContent}>
-            <Text style={{ marginTop: 12 }}>Loading...</Text>
-          </View>
+          )}
+          <ModalDropdown
+            items={tasks} 
+            visible={modalVisibility}
+            setVisible={setModalVisibility}
+            handleSelectedTask={handleSelectedTask}
+            selectedItem={selectedCategory?.name}
+            colors={categoryColorsLight}
+          />
+          {selectedTask && (
+            <>
+            <View style={{alignItems: 'flex-start'}}>
+              <Button
+                title='Back'
+                onPress={() => setSelectedTask(null)}
+              />
+            </View>
+            <View style={{ height: screenHeight/2, justifyContent: 'center' }}>
+              <Text style={styles.taskTitle}>{selectedTask.name}</Text>
+              <TextInput
+                style={styles.textInput}
+                value={comment ? comment : ''}
+                onChangeText={setComment} 
+                placeholder='Comment'
+                placeholderTextColor='grey'
+                onBlur={Keyboard.dismiss}
+                multiline={true}
+              />
+              <View style={styles.postButton}>
+                <Button
+                  title='Post'
+                  onPress={submitPost}
+                />
+              </View>
+            </View>
+            </>
+          )}
         </View>
-      </Modal>
+      </ScrollView>
     </>
   )
 }
@@ -257,37 +325,52 @@ export default function Feed() {
 const styles = StyleSheet.create({
   container: {
     padding: 12,
-    backgroundColor: 'white', //'#0a0a0a',
+    backgroundColor: '#0a0a0a', //'#353567',
     flexDirection: 'column',
     paddingTop: 75,
   },
   categoryBox: {
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'space-around',
-    borderRadius: 10,
+  },
+  iconCircle: {
+    borderRadius: 100,
+    height: 80,
+    width: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   verticallySpaced: {
     paddingTop: 4,
     paddingBottom: 4,
     alignSelf: 'stretch',
   },
+  postButton: {
+    padding: 10
+  },
+  taskTitle: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    padding: 20
+  },
   textInput: {
-    borderWidth: 2,
-    borderColor: 'black',
+    borderWidth: 1,
+    borderColor: 'white',
     padding: 10,
-    borderRadius: 4
+    borderRadius: 4,
+    color: 'white'
   },
   modalBackground: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
     width: 200,
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: '#0a0a0a',
     borderRadius: 10,
     alignItems: 'center',
   },

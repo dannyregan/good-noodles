@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons';
 //import { createStackNavigator } from '@react-navigation/stack'
 //import { Account } from '../components/Account'
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -40,6 +41,7 @@ export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh, a
     likes: number;
     liked_by: { user_id: string; avatar_url?: string; username?: string }[] | null;
     avatar_url: string;
+    category_id: number;
 
     // ADD THESE
     tasks?: { task: string } | null;
@@ -49,6 +51,21 @@ export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh, a
   const [postsState, setPostsState] = useState(posts);
   const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
+  const categoryIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
+    Animals: 'paw',
+    Chores: 'list',
+    Food: 'pizza',
+    Friends: 'people',
+    Games: 'dice',
+    Health: 'fitness',
+    Money: 'cash',
+    Outdoors: 'earth',
+    Plants: 'leaf',
+    Productivity: 'trending-up',
+    Professional: 'briefcase',
+    Vibes: 'walk',
+    'Video Games': 'game-controller',
+  };
 
   // Sync local state with hooks
   useEffect(() => {
@@ -61,14 +78,19 @@ export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh, a
   // Refresh feed when refreshTrigger changes
   useEffect(() => {
     const doRefresh = async () => {
-      console.log('refreshing!')
+      console.log('refreshing!');
       setRefreshing(true);
-      setTimeout(async () => {
-        await refreshPosts();
-        await refreshLikes();
-      }, 1000)
-      setRefreshing(false);
+      try {
+        await refreshPosts();  // fetch latest posts
+        await refreshLikes();  // fetch latest likes
+        setPostsState(posts); 
+      } catch (err) {
+        console.error('Error refreshing feed:', err);
+      } finally {
+        setRefreshing(false);
+      }
     };
+
     doRefresh();
   }, [refreshTrigger]);
 
@@ -135,6 +157,8 @@ const toggleLike = async (postId: number) => {
   // }
 
   const renderItem = ({ item }: { item: Post }) => {
+    //console.log(item)
+   // const iconName = categoryIcons[item.task.categoryId];
     const currentPost = postsState.find(p => p.post_id === item.post_id) || item;
 
     const isLiked = likedPosts.has(currentPost.post_id);
@@ -171,6 +195,7 @@ const toggleLike = async (postId: number) => {
               <Text style={{ fontWeight: 'bold', color: 'white', paddingBottom: 4}}>{currentPost.poster_username}</Text>
               <Text style={styles.dateText}>{formattedDate}</Text>
             </View>
+            <View></View>
           </TouchableOpacity>
 
           <View style={{paddingTop: 8, }}>

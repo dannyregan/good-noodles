@@ -5,7 +5,7 @@ export default function CreatePostLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />                    
       <Stack.Screen
-        name="comment/comment"                        
+        name="comment"                        
         options={{ presentation: 'card' }}           
       />
     </Stack>
