@@ -1,12 +1,12 @@
 // components/UserFeed.tsx
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, Image } from 'react-native';
-import { Button } from '@rneui/themed';
+import { View, Text, FlatList, StyleSheet, Alert, Image, TouchableOpacity } from 'react-native';
 import { useUserPosts } from '../hooks/useUserPosts';
 import { useUserLikes } from '../hooks/useUserLikes';
 import { supabase } from '../lib/supabase';
 import { LinearGradient } from 'expo-linear-gradient'
 import { SessionContext } from '../lib/SessionContext';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 type UserFeedProps = {
   userId: string;
@@ -153,16 +153,18 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
 
 
           <View style={styles.likesRow}>
-            <Button
-              type="clear"
-              icon={{
-                name: isLiked ? 'heart' : 'heart-outline',
-                type: 'ionicon',
-                color: isLiked ? 'rgb(242, 12, 144, 1)' : 'white',
-                size: 25,
-              }}
-              onPress={() => userId === session?.user.id ? greedy() : toggleLike(item.post_id) }
-            />
+            <TouchableOpacity
+              onPress={() =>
+                userId === session?.user.id ? greedy() : toggleLike(item.post_id)
+              }
+              style={{ padding: 8 }} // optional: similar to RNEUI clear button padding
+            >
+              <Ionicons
+                name={isLiked ? 'heart' : 'heart-outline'}
+                size={25}
+                color={isLiked ? 'rgb(242, 12, 144, 1)' : 'white'}
+              />
+            </TouchableOpacity>
             
 
             <View style={{ flexDirection: 'row', marginLeft: 8 }}>

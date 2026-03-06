@@ -1,6 +1,5 @@
-import { Text, StyleSheet, ScrollView, TextInput } from 'react-native'
+import { Text, StyleSheet, ScrollView, TextInput, Button } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router';
-import { Button } from '@rneui/base';
 
 export default function commentAndPost(task: string) {
   const params = useLocalSearchParams();

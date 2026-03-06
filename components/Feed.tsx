@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Image, } from 'react-native';
-import { Button } from '@rneui/themed';
+import { View, Text, FlatList, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
 import { useAllPosts } from '../hooks/useAllPosts';
 import { useUserLikes } from '../hooks/useUserLikes';
 import { supabase } from '../lib/supabase';
@@ -209,16 +208,20 @@ const toggleLike = async (postId: number) => {
 
 
           <View style={styles.likesRow}>
-            <Button
-              type="clear"
-              icon={{
-                name: isLiked ? 'heart' : 'heart-outline',
-                type: 'ionicon',
-                color: isLiked ? 'rgb(242, 12, 144, 1)' : 'white',
-                size: 25,
+            <TouchableOpacity
+              onPress={() =>
+                item.user_id === userId ? greedy() : toggleLike(item.post_id)
+              }
+              style={{
+                padding: 8, // similar to RNEUI's button padding
               }}
-              onPress={() => item.user_id === userId ? greedy() : toggleLike(item.post_id)}
-            />
+            >
+              <Ionicons
+                name={isLiked ? 'heart' : 'heart-outline'}
+                size={25}
+                color={isLiked ? 'rgba(242,12,144,1)' : 'white'}
+              />
+            </TouchableOpacity>
             
 
             <View style={{ flexDirection: 'row', marginLeft: 8 }}>
@@ -241,8 +244,8 @@ const toggleLike = async (postId: number) => {
     );
   };
 
-  if (error) return <Text>Feed Error: {error}</Text>;
-  if (!postsState.length) return <Text>No posts yet.</Text>;
+  if (error) return <Text style={{color: 'white'}}>Feed Error: {error}</Text>;
+  if (!postsState.length) return <Text style={{color: 'white'}}>No posts yet.</Text>;
   if (loading) return <Text style={{color: 'white'}}>Loading...</Text>;
 
   return (

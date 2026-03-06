@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { StyleSheet, View, TextInput, Text, Button, Alert, ScrollView, Modal, Keyboard, FlatList, TouchableOpacity, Dimensions } from 'react-native'
-import { Input } from '@rneui/themed'
 import { Session } from '@supabase/supabase-js'
 import { ModalDropdown } from '../../../components/Dropdown'
 import { SessionContext } from '../../../lib/SessionContext';

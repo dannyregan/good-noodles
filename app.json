@@ -1,6 +1,5 @@
 {
   "expo": {
-    "entryPoint": "expo-router/entry",
     "name": "Good Noodles",
     "slug": "expo-user-management",
     "version": "1.0.0",
@@ -46,7 +45,9 @@
         {
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
-      ]
+      ],
+      "expo-router",
+      "expo-font"
     ]
   }
 }

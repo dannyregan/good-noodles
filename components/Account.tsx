@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react'
-import { Image, StyleSheet, View, Alert, Text, ScrollView, RefreshControl, Button, TextInput, Dimensions, StatusBar } from 'react-native'
-import {  Input, Icon } from '@rneui/themed'
+import { Image, StyleSheet, View, Alert, Text, ScrollView, RefreshControl, Button, TextInput, Dimensions, StatusBar, TouchableOpacity } from 'react-native'
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { supabase } from '../lib/supabase'
 import { SessionContext } from '../lib/SessionContext'
 import { UserFeed } from '../components/UserFeed'
@@ -246,13 +246,13 @@ export default function Account({ userId: propUserId }: AccountProps) {
                     </View>
                     <View
                     style={{ position: 'absolute', zIndex: 999, top: 550, left: 20}}>
-                    <Icon
-                        type='ionicon'
-                        name='camera-outline'
+                    <TouchableOpacity onPress={pickImage}>
+                      <Ionicons
+                        name="camera-outline"
                         size={30}
-                        color='rgb(0, 122, 255)'
-                        onPress={pickImage}
-                    />
+                        color="rgb(0, 122, 255)"
+                      />
+                    </TouchableOpacity>
                     </View>
                     </>
                 )}
@@ -323,7 +323,7 @@ export default function Account({ userId: propUserId }: AccountProps) {
               >
             <Text style={[styles.bold, styles.statsText,]}>{pointsGiven}</Text>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Icon name='heart-outline' type='ionicon' size={15} color='white'></Icon>
+              <Ionicons name='heart-outline' size={15} color='white'></Ionicons>
               <Text style={styles.statsDesc}> Given</Text>
             </View>
           </LinearGradient>
@@ -338,7 +338,7 @@ export default function Account({ userId: propUserId }: AccountProps) {
               >
             <Text style={[styles.bold, styles.statsText,]}>{pointsReceived}</Text>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Icon name='heart-outline' type='ionicon' size={15} color='white'></Icon>
+              <Ionicons name='heart-outline' size={15} color='white'></Ionicons>
               <Text style={styles.statsDesc}> Earned</Text>
             </View>
           </LinearGradient>

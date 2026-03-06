@@ -1,8 +1,23 @@
+import { StyleSheet, View, Text, Dimensions} from 'react-native';
+import { useEffect } from 'react';
 
-import { StyleSheet, View, Text, Dimensions} from 'react-native'
+import { setupNotifications, scheduleDailyNotification } from '../hooks/notifications'
 
 const Feed = () => {
   const screenHeight = Dimensions.get('window').height;
+
+  useEffect(() => {
+    // Initialize notifications
+    const init = async () => {
+      const granted = await setupNotifications();
+      if (granted) {
+        await scheduleDailyNotification();
+      }
+    };
+
+    init();
+  }, []);
+
   return (
     <View style={[styles.container, {height: screenHeight}]}>
       <View>
