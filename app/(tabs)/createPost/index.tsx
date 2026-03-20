@@ -226,38 +226,38 @@ export default function Feed() {
           shadowOffset: { width: 0, height: 3 },
           elevation: 6, // Android shadow
           borderRadius: 10, // match TouchableOpacity
-          marginBottom: 12,
+          paddingTop: 12,
         }}
       >
-      <TouchableOpacity
-        style={{
-          borderColor: iconColorLight,
-          borderWidth: 2,
-          height: screenHeight / 5.5,
-          width: screenWidth / 2.3,
-          borderRadius: 10,
-          alignItems: 'center',
-          justifyContent: 'space-around',
-          backgroundColor: '#0a0a0a',
-        }}
-        onPress={() => {
-          handleSelectedCategory({
-            id: item.categoryId,
-            name: item.category})
-        }}
-      >
-          <View style={{marginTop: 20}}>
-            <LinearGradient
-              colors={[iconColorLight, iconColorDark]} // bright electric pink gradient
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.iconCircle}
-            >
-              <Ionicons name={iconName} size={40} color='white' />
-            </LinearGradient>
-          </View>
-          <Text style={{fontSize: 18, fontWeight: 700, color: iconColorLight, paddingBottom: 10}}>{item.category}</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            borderColor: iconColorLight,
+            borderWidth: 2,
+            height: screenHeight / 5.5,
+            width: screenWidth / 2.3,
+            borderRadius: 10,
+            alignItems: 'center',
+            justifyContent: 'space-around',
+            backgroundColor: '#0a0a0a',
+          }}
+          onPress={() => {
+            handleSelectedCategory({
+              id: item.categoryId,
+              name: item.category})
+          }}
+        >
+            <View style={{marginTop: 20}}>
+              <LinearGradient
+                colors={[iconColorLight, iconColorDark]} // bright electric pink gradient
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.iconCircle}
+              >
+                <Ionicons name={iconName} size={40} color='white' />
+              </LinearGradient>
+            </View>
+            <Text style={{fontSize: 18, fontWeight: 700, color: iconColorLight, paddingBottom: 10}}>{item.category}</Text>
+        </TouchableOpacity>
       </View>
     )
   }
