@@ -65,6 +65,36 @@ export const Feed: React.FC<FeedProps> = ({ userId, refreshTrigger, onRefresh, a
     Vibes: 'walk',
     'Video Games': 'game-controller',
   };
+  const categoryColorsDark: Record<string, string> = {
+  Animals: 'rgb(220, 24, 83)',
+  Chores: 'rgb(255, 132, 0)',
+  Food: 'rgb(255, 204, 0)',
+  Friends: 'rgb(0, 129, 210)',
+  Games: 'rgb(82, 57, 225)',
+  Health: 'rgb(255, 0, 0)',
+  Money: 'rgb(14, 139, 0)',
+  Outdoors: 'rgb(0, 147, 170)',
+  Plants: 'rgb(98, 147, 0)',
+  Productivity: 'rgb(12, 0, 141)',
+  Professional: 'rgb(118, 193, 255)',
+  Vibes: 'rgb(185, 0, 132)',
+  'Video Games': 'rgb(104, 0, 201)',
+  };
+  const categoryColorsLight: Record<string, string> = {
+  Animals: 'rgb(230, 123, 155)',
+  Chores: 'rgb(253, 202, 107)',
+  Food: 'rgb(255, 220, 79)',
+  Friends: 'rgb(159, 208, 255)',
+  Games: 'rgb(160, 149, 221)',
+  Health: 'rgb(255, 137, 137)',
+  Money: 'rgb(130, 244, 117)',
+  Outdoors: 'rgb(125, 238, 255)',
+  Plants: 'rgb(210, 255, 121)',
+  Productivity: 'rgb(134, 123, 255)',
+  Professional: 'rgb(70, 130, 180)',
+  Vibes: 'rgb(255, 118, 216)',
+  'Video Games': 'rgb(185, 109, 255)',
+  };
 
   // Sync local state with hooks
   useEffect(() => {
@@ -159,10 +189,12 @@ const toggleLike = async (postId: number) => {
   // }
 
   const renderItem = ({ item }: { item: Post }) => {
-    // console.log(item)
-   // const iconName = categoryIcons[item.task.categoryId];
     const currentPost = postsState.find(p => p.post_id === item.post_id) || item;
-    console.log(currentPost);
+    // Determine category name (try to get from item or currentPost)
+    const categoryName = currentPost.category || currentPost.tasks?.category || currentPost.tasks?.task_category || currentPost.category_name || '';
+    const iconName = categoryIcons[categoryName];
+    const iconColorLight = categoryColorsLight[categoryName] || '#fff';
+    const iconColorDark = categoryColorsDark[categoryName] || '#000';
 
     const isLiked = likedPosts.has(currentPost.post_id);
 
@@ -181,26 +213,37 @@ const toggleLike = async (postId: number) => {
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={[styles.postContainer, {padding: 0,}]} 
-
       >
-
         <View style={styles.postContainer} >
           <TouchableOpacity 
-            style={{flexDirection: 'row', }}
+            style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%'}}
             onPress={() => navigation.push('account/[userId]', { userId: currentPost.user_id })}
-            >
+          >
+            {/* Profile Picture */}
             <Image
               source={{ uri: currentPost.user_avatar }}
               style={styles.avatar}
               resizeMode="cover"
             />
-            <View style={{ width: 150, marginLeft: 15, justifyContent: 'center',}}>
-              <Text style={{ fontWeight: 'bold', color: 'white', paddingBottom: 4}}>{currentPost.poster_username}</Text>
+            {/* Username and Date Centered */}
+            <View style={{ flex: 1, marginLeft: 15, marginRight: 15, justifyContent: 'center' }}>
+              <Text style={{ fontWeight: 'bold', color: 'white', paddingBottom: 4 }}>{currentPost.poster_username}</Text>
               <Text style={styles.dateText}>{formattedDate}</Text>
             </View>
-            <View><Text>{currentPost.category}</Text></View>
+            {/* Category Icon Top Right */}
+            {iconName && (
+              <View style={{ alignItems: 'flex-end' }}>
+                <LinearGradient
+                  colors={[iconColorLight, iconColorDark]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[styles.avatar, {alignItems: 'center', justifyContent: 'center' }]}
+                >
+                  <Ionicons name={iconName} size={40} color='white' />
+                </LinearGradient>
+              </View>
+            )}
           </TouchableOpacity>
-
           <View style={{paddingTop: 8, }}>
             <Text style={styles.postTitle}>{item.tasks?.task || 'No Task'}</Text>
             <Text style={styles.postContent}>{item.comment}</Text>
@@ -306,5 +349,13 @@ const styles = StyleSheet.create({
     height: 35,
     borderRadius: 5,
     marginRight: 10
-  }
+  },
+  iconCircle: {
+    borderRadius: 100,
+    height: 50,
+    width: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
 });

@@ -248,7 +248,7 @@ export default function Feed() {
         >
             <View style={{marginTop: 20}}>
               <LinearGradient
-                colors={[iconColorLight, iconColorDark]} // bright electric pink gradient
+                colors={[iconColorLight, iconColorDark]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.iconCircle}
@@ -307,10 +307,15 @@ export default function Feed() {
                 multiline={true}
               />
               <View style={styles.postButton}>
-                <Button
-                  title='Post'
-                  onPress={submitPost}
-                />
+                {!loading ? 
+                  <Button
+                    title='Post'
+                    onPress={submitPost}
+                  /> : 
+                  <Button
+                    title='Submitting post...'
+                  />
+                }
               </View>
             </View>
             </>
