@@ -53,56 +53,6 @@ export const UserFeed: React.FC<UserFeedProps> = ({ userId, refreshTrigger, avat
 
   const toggleLike = async (postId: number) => {
     Alert.alert('Like/Unlike from the main feed only.')
-    // const isLiked = likedPosts.has(postId);
-  
-    // // Store current state for rollback
-    // const prevLikedPosts = new Set(likedPosts);
-    // const prevPostsState = [...postsState];
-  
-    // const myLike = { 
-    //   user_id: userId,
-    //   avatar_url: avatarUrl,
-    //   username };
-  
-    // // Optimistic UI update
-    // setLikedPosts(prev => {
-    //   const copy = new Set(prev);
-    //   if (isLiked) copy.delete(postId);
-    //   else copy.add(postId);
-    //   return copy;
-    // });
-  
-    // setPostsState(prev =>
-    //   prev.map(post => {
-    //     if (post.post_id === postId) {
-    //       const updatedLikedBy = isLiked
-    //         ? (post.liked_by || []).filter((like: { user_id: string, avatar_url: string }) => like.user_id !== userId)
-    //         : [...(post.liked_by || []), myLike];
-    //       return { ...post, liked_by: updatedLikedBy }; // new object
-    //     }
-    //     return post;
-    //   })
-    // );
-  
-    // // Fire-and-forget backend call
-    // try {
-    //   const { error } = await supabase.rpc('togglelike', {
-    //     is_liked: isLiked,
-    //     p_user_id: userId,
-    //     p_post_id: postId,
-    //   });
-  
-    //   if (error) {
-    //     throw error;
-    //   }
-    // } catch (err) {
-    //   console.error(err);
-    //   Alert.alert('Error toggling like. Reverting...');
-  
-    //   // Roll back UI
-    //   setLikedPosts(prevLikedPosts);
-    //   setPostsState(prevPostsState);
-    // }
   };
 
 

@@ -35,6 +35,7 @@ export default function Account({ userId: propUserId }: AccountProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined)
   const [photoPath, setPhotoPath] = useState<string | undefined>(undefined)
   const [smallPhotoPath, setSmallPhotoPath] = useState<string | undefined>(undefined)
+  const [uri, setUri] = useState<string | null>(null);
   const screenWidth = Dimensions.get('window').width;
   const bannerHeight = 600;
   
@@ -60,10 +61,19 @@ export default function Account({ userId: propUserId }: AccountProps) {
         setGoodNoodleStars(data.stars)
       }
 
-      const { data: smallPhotoData } = supabase.storage.from('avatars').getPublicUrl(`public/SMALL${userId}.jpg`);
-      setSmallPhotoPath(smallPhotoData.publicUrl);
-      const { data: photoData } = supabase.storage.from('avatars').getPublicUrl(`public/${userId}.jpg`);
-      setPhotoPath(photoData.publicUrl);
+      if (data?.avatar_url) {
+        const { data: photoData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(`public/${data.avatar_url}`);
+        setPhotoPath(photoData.publicUrl);
+      }
+
+      if (data?.small_avatar_url) {
+        const { data: smallPhotoData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(`public/${data.small_avatar_url}`);
+        setSmallPhotoPath(smallPhotoData.publicUrl);
+      }
       
     } catch (error) {
       if (error instanceof Error) Alert.alert(error.message)
@@ -74,7 +84,7 @@ export default function Account({ userId: propUserId }: AccountProps) {
 
   useEffect(() => {
     if (session?.user) getProfile()
-  }, [session, photoPath, userId])
+  }, [session, userId])
 
   const onRefresh = async () => {
     setRefreshing(true)
@@ -108,66 +118,115 @@ export default function Account({ userId: propUserId }: AccountProps) {
   }
 
   const updateProfile = async () => {
-    if (!session?.user) return
+    if (!session?.user) return;
+
     try {
-      setLoading(true)
-      const updates = {
-        user_id: session.user.id,
+      setLoading(true);
+      const userId = session.user.id;
+
+      let images;
+
+      if (uri) {
+        images = await uploadImage(uri);
+
+        if (images) {
+          // keep preview visible immediately
+          const { data: photoData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(`public/${images.avatar_url}`);
+          const { data: smallPhotoData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(`public/${images.small_avatar_url}`);
+
+          setPhotoPath(photoData.publicUrl);
+          setSmallPhotoPath(smallPhotoData.publicUrl);
+          setUri(null);
+        }
+      }
+
+      const updates: any = {
+        user_id: userId,
         username,
-        avatar_url: `${session?.user.id}.jpg`,
-        small_avatar_url: `SMALL${session?.user.id}.jpg`,
         name,
         updated_at: new Date(),
-      }
-      const { error } = await supabase.from('profiles').upsert(updates, { onConflict: 'user_id' })
-      if (error) throw error
-      Alert.alert('Profile updated!')
-    } catch (error) {
-      if (error instanceof Error) Alert.alert(error.message)
+      };
+
+      if (images?.avatar_url) updates.avatar_url = images.avatar_url;
+      if (images?.small_avatar_url) updates.small_avatar_url = images.small_avatar_url;
+
+      const { error } = await supabase.from('profiles').upsert(updates, { onConflict: 'user_id' });
+      if (error) throw error;
+
+      Alert.alert('Profile updated!');
+    } catch (err) {
+      if (err instanceof Error) Alert.alert(err.message);
+      else Alert.alert('Unexpected error updating profile.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
 
 
 
 
   const uploadImage = async (uri: string) => {
-    if (!uri) return
+    if (!uri || !session?.user) return;
 
-    const uriCompressed: string[] = await compressPics(uri)
+    const userId = session.user.id;
+    const timestamp = Date.now();
 
-    await Promise.all(
-      uriCompressed.map(async (uri, index) => {
-        const base64File = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+    const avatarFilename = `public/${userId}_${timestamp}.jpg`;
+    const smallAvatarFilename = `public/SMALL_${userId}_${timestamp}.jpg`;
 
-        const filename = index === 0 ? `public/${session?.user.id}.jpg` : `public/SMALL${session?.user.id}.jpg`
+    try {
+      // 1️⃣ Get existing filenames from DB
+      const { data: existingProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('avatar_url, small_avatar_url')
+        .eq('user_id', userId)
+        .single();
 
-        const { data, error } = await supabase
-          .storage
+      if (profileError && profileError.code !== 'PGRST116') throw profileError;
+
+      // 2️⃣ Delete old files if they exist
+      const filesToDelete: string[] = [];
+      if (existingProfile?.avatar_url) filesToDelete.push(`public/${existingProfile.avatar_url}`);
+      if (existingProfile?.small_avatar_url) filesToDelete.push(`public/${existingProfile.small_avatar_url}`);
+
+      if (filesToDelete.length > 0) {
+        const { data, error } = await supabase.storage.from('avatars').remove(filesToDelete);
+        if (error) console.warn('Error deleting old avatars:', error);
+        else console.log('Deleted old avatars:', data);
+      }
+
+      // 3️⃣ Compress images
+      const [compressedUri, smallCompressedUri] = await compressPics(uri);
+
+      // 4️⃣ Upload new images
+      const uploadTasks = [
+        { uri: compressedUri, filename: avatarFilename },
+        { uri: smallCompressedUri, filename: smallAvatarFilename }
+      ];
+
+      for (const task of uploadTasks) {
+        const base64File = await FileSystem.readAsStringAsync(task.uri, { encoding: FileSystem.EncodingType.Base64 });
+        const { error } = await supabase.storage
           .from('avatars')
-          .upload(filename, decode(base64File), {
-            contentType: 'image/jpg',
-            upsert: true
-          })
-        if (error) {
-          console.error('Error uploading image to supabase:', index, error)
-          return;
-        }
+          .upload(task.filename, decode(base64File), { contentType: 'image/jpg', upsert: true });
+        if (error) console.error('Error uploading image:', error);
+      }
 
-        const { data: publicData } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(filename);
+      // 5️⃣ Return new filenames for DB
+      return {
+        avatar_url: `${userId}_${timestamp}.jpg`,
+        small_avatar_url: `SMALL_${userId}_${timestamp}.jpg`
+      };
 
-        if (index === 0) {
-          setPhotoPath(`${publicData.publicUrl}?t=${Date.now()}`);
-        } else {
-          setSmallPhotoPath(`${publicData.publicUrl}?t=${Date.now()}`);
-        }
-      })
-    );
-  }
+    } catch (err) {
+      console.error('Upload avatar error:', err);
+    }
+  };
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -178,14 +237,13 @@ export default function Account({ userId: propUserId }: AccountProps) {
     });
 
     if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      setAvatarUrl(uri);       // optional, for local preview
-      uploadImage(uri);        // pass URI directly
+      setUri(result.assets[0].uri);
     }
   };
 
   if (!session?.user) return null
 
+  const imageUri = uri ?? photoPath ?? smallPhotoPath;
 
 
   return (
@@ -205,9 +263,14 @@ export default function Account({ userId: propUserId }: AccountProps) {
           <View style={{ alignItems: 'center', }}>
             <View style={[styles.avatar, {alignItems: 'center', justifyContent: 'center', height: bannerHeight, position: 'absolute'}]}><Text style={{color: 'white'}}>Loading Profile Photo...</Text></View>
             <View style={[styles.bannerImage, { alignItems: 'center', width: screenWidth, height: bannerHeight }]}>
-              {!loading ? (
+              <Image
+                source={{ uri: uri ?? photoPath ?? smallPhotoPath }}
+                style={[styles.avatar, { height: bannerHeight }]}
+                resizeMode="cover"
+              />
+              {/* {!loading ? (
                 <Image
-                  source={{ uri: photoPath || avatarUrl}}
+                  source={{ uri: uri || photoPath }}
                   style={[styles.avatar, {height: bannerHeight}]}
                   resizeMode="cover"
                 />) : (
@@ -215,11 +278,8 @@ export default function Account({ userId: propUserId }: AccountProps) {
                   source={{ uri: smallPhotoPath || avatarUrl}}
                   style={[styles.avatar, {height: bannerHeight}]}
                   resizeMode="cover"
-                />)}
-                {/* <Button
-                  title={loading ? 'Loading...' : 'Choose Photo'}
-                  onPress={pickImage}
-                /> */}
+                />)} */}
+            
 
                 <LinearGradient
                   colors={['rgba(10,10,10,0)', 'rgba(10,10,10,.5)', 'rgba(10,10,10,.9)', 'rgba(10,10,10,1)']}

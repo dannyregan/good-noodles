@@ -66,11 +66,12 @@ export function useAllPosts(userId: string) {
       const thirtyOneDaysAgo = new Date();
       thirtyOneDaysAgo.setDate(thirtyOneDaysAgo.getDate() - 31);
 
+      // Join categories through tasks
       const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select(`
           *,
-          tasks (task, base_points, like_points, category_id),
+          tasks:tasks (task, base_points, like_points, category_id, categories:categories!tasks_category_id_fkey (category, category_id)),
           likes (
             user_id,
             profiles (username, avatar_url, small_avatar_url)
@@ -84,9 +85,15 @@ export function useAllPosts(userId: string) {
 
       const formatted = await formatPosts(postsData || []);
 
+      // Map the category name to the post object for easier access
+      const postsWithCategory = (formatted || []).map(post => ({
+        ...post,
+        category: post.tasks?.categories?.category || null
+      }));
+
       setPosts(prev => {
         const existingIds = new Set(prev.map(p => p.post_id));
-        const newPosts = formatted.filter(p => !existingIds.has(p.post_id));
+        const newPosts = postsWithCategory.filter(p => !existingIds.has(p.post_id));
         return [...prev, ...newPosts];
       });
     } catch (err: any) {
@@ -98,11 +105,12 @@ export function useAllPosts(userId: string) {
     try {
       setLoading(true);
 
+      // Join categories through tasks
       const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select(`
           *,
-          tasks (task, base_points, like_points, category_id),
+          tasks:tasks (task, base_points, like_points, category_id, categories:categories!tasks_category_id_fkey (category, category_id)),
           likes (
             user_id,
             profiles (username, avatar_url, small_avatar_url)
@@ -115,7 +123,13 @@ export function useAllPosts(userId: string) {
 
       const formatted = await formatPosts(postsData || []);
 
-      setPosts(formatted);
+      // Map the category name to the post object for easier access
+      const postsWithCategory = (formatted || []).map(post => ({
+        ...post,
+        category: post.tasks?.categories?.category || null
+      }));
+
+      setPosts(postsWithCategory);
 
       // start loading remaining posts in background
       fetchRemainingPosts();

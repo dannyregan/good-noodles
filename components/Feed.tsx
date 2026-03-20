@@ -159,9 +159,10 @@ const toggleLike = async (postId: number) => {
   // }
 
   const renderItem = ({ item }: { item: Post }) => {
-    //console.log(item)
+    // console.log(item)
    // const iconName = categoryIcons[item.task.categoryId];
     const currentPost = postsState.find(p => p.post_id === item.post_id) || item;
+    console.log(currentPost);
 
     const isLiked = likedPosts.has(currentPost.post_id);
 
@@ -197,7 +198,7 @@ const toggleLike = async (postId: number) => {
               <Text style={{ fontWeight: 'bold', color: 'white', paddingBottom: 4}}>{currentPost.poster_username}</Text>
               <Text style={styles.dateText}>{formattedDate}</Text>
             </View>
-            <View></View>
+            <View><Text>{currentPost.category}</Text></View>
           </TouchableOpacity>
 
           <View style={{paddingTop: 8, }}>
@@ -245,8 +246,8 @@ const toggleLike = async (postId: number) => {
   };
 
   if (error) return <Text style={{color: 'white'}}>Feed Error: {error}</Text>;
-  if (!postsState.length) return <Text style={{color: 'white'}}>No posts yet.</Text>;
   if (loading) return <Text style={{color: 'white'}}>Loading...</Text>;
+  if (!postsState.length) return <Text style={{color: 'white'}}>No posts yet.</Text>;
 
   return (
     <FlatList
