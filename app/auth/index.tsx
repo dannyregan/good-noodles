@@ -17,6 +17,7 @@ export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   async function signInWithEmail() {
     setLoading(true)
@@ -51,13 +52,24 @@ export default function Auth() {
       <View style={styles.inputContainer}>
         <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.icon} />
         <TextInput
-          style={styles.input}
+          style={[styles.input, { paddingRight: 36 }]}
           placeholder="Password"
           autoCapitalize="none"
-          secureTextEntry
+          secureTextEntry={!showPassword}
           value={password}
           onChangeText={setPassword}
         />
+        <TouchableOpacity
+          style={styles.eyeButton}
+          onPress={() => setShowPassword((prev) => !prev)}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons
+            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+            size={20}
+            color="#888"
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Sign In Button */}
@@ -103,6 +115,14 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 40,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 10,
+    padding: 2,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   button: {
     backgroundColor: '#1e90ff',
