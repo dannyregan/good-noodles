@@ -24,6 +24,7 @@ export default function Feed() {
   const [selectedCategory, setSelectedCategory] = useState<Item | null>(null);
   const [comment, setComment] = useState<string | null>(null)
   const [modalVisibility, setModalVisibility] = useState(false)
+  const [canPostToday, setCanPostToday] = useState<boolean | null>(null)
 
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
@@ -100,8 +101,28 @@ export default function Feed() {
     setModalVisibility(true);
   }
 
-  const handleSelectedTask = (task: Item) => {
-    setSelectedTask(task);
+  const handleSelectedTask = async (task: Item) => {
+    // Check if user can post today
+    try {
+      setLoading(true);
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+      const { data: postsToday, error } = await supabase
+        .from('posts')
+        .select('post_id')
+        .eq('user_id', session?.user.id)
+        .gte('created_at', startOfDay.toISOString())
+        .lte('created_at', endOfDay.toISOString());
+      if (error) throw error;
+      setCanPostToday((postsToday?.length ?? 0) < 2);
+    } catch (err) {
+      setCanPostToday(false);
+    } finally {
+      setLoading(false);
+      setSelectedTask(task);
+    }
   };
 
   const fetchCategories = async () => {
@@ -289,35 +310,49 @@ export default function Feed() {
           />
           {selectedTask && (
             <>
-            <View style={{alignItems: 'flex-start'}}>
-              <Button
-                title='Back'
-                onPress={() => setSelectedTask(null)}
-              />
-            </View>
-            <View style={{ height: screenHeight/2, justifyContent: 'center' }}>
-              <Text style={styles.taskTitle}>{selectedTask.name}</Text>
-              <TextInput
-                style={styles.textInput}
-                value={comment ? comment : ''}
-                onChangeText={setComment} 
-                placeholder='Comment'
-                placeholderTextColor='grey'
-                onBlur={Keyboard.dismiss}
-                multiline={true}
-              />
-              <View style={styles.postButton}>
-                {!loading ? 
-                  <Button
-                    title='Post'
-                    onPress={submitPost}
-                  /> : 
-                  <Button
-                    title='Submitting post...'
-                  />
-                }
-              </View>
-            </View>
+              {canPostToday === false ? (
+                <View style={{ height: screenHeight/2, justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={styles.taskTitle}>You can only post twice today.</Text>
+                  <View style={{alignItems: 'flex-start', marginTop: 20}}>
+                    <Button
+                      title='Damn'
+                      onPress={() => { setSelectedTask(null); setCanPostToday(null); }}
+                    />
+                  </View>
+                </View>
+              ) : (
+                <>
+                  <View style={{alignItems: 'flex-start'}}>
+                    <Button
+                      title='Back'
+                      onPress={() => { setSelectedTask(null); setCanPostToday(null); }}
+                    />
+                  </View>
+                  <View style={{ height: screenHeight/2, justifyContent: 'center' }}>
+                    <Text style={styles.taskTitle}>{selectedTask.name}</Text>
+                    <TextInput
+                      style={styles.textInput}
+                      value={comment ? comment : ''}
+                      onChangeText={setComment} 
+                      placeholder='Comment'
+                      placeholderTextColor='grey'
+                      onBlur={Keyboard.dismiss}
+                      multiline={true}
+                    />
+                    <View style={styles.postButton}>
+                      {!loading ? 
+                        <Button
+                          title='Post'
+                          onPress={submitPost}
+                        /> : 
+                        <Button
+                          title='Submitting post...'
+                        />
+                      }
+                    </View>
+                  </View>
+                </>
+              )}
             </>
           )}
         </View>
