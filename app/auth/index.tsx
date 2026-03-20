@@ -34,6 +34,21 @@ export default function Auth() {
     setLoading(false)
   }
 
+  async function resetPassword() {
+    if (!email) {
+      Alert.alert('Please enter your email address first.')
+      return
+    }
+    setLoading(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(email)
+    if (error) {
+      Alert.alert(error.message)
+    } else {
+      Alert.alert('Password reset email sent! Please check your inbox.')
+    }
+    setLoading(false)
+  }
+
   return (
     <View style={styles.container}>
       {/* Email Input */}
@@ -88,6 +103,15 @@ export default function Auth() {
         disabled={loading}
       >
         <Text style={styles.buttonText}>Sign up</Text>
+      </TouchableOpacity>
+
+      {/* Reset Password Button */}
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={resetPassword}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>Reset password</Text>
       </TouchableOpacity>
     </View>
   )
