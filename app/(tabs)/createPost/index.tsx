@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { supabase } from '../../../lib/supabase'
-import { StyleSheet, View, TextInput, Text, Button, Alert, ScrollView, Modal, Keyboard, FlatList, TouchableOpacity, Dimensions } from 'react-native'
+import { StyleSheet, View, TextInput, Text, Button, Alert, ScrollView, Keyboard, FlatList, TouchableOpacity, Dimensions } from 'react-native'
 import { Session } from '@supabase/supabase-js'
 import { ModalDropdown } from '../../../components/Dropdown'
 import { SessionContext } from '../../../lib/SessionContext';
@@ -46,6 +46,7 @@ export default function Feed() {
   Plants: 'leaf',
   Productivity: 'trending-up',
   Professional: 'briefcase',
+  Sports: 'tennisball',
   Vibes: 'walk',
   'Video Games': 'game-controller',
   };
@@ -60,7 +61,8 @@ export default function Feed() {
   Outdoors: 'rgb(0, 147, 170)',
   Plants: 'rgb(98, 147, 0)',
   Productivity: 'rgb(12, 0, 141)',
-  Professional: 'rgb(118, 193, 255)',
+  Professional: 'rgb(70, 130, 180)',
+  Sports: 'rgb(255, 136, 0)',
   Vibes: 'rgb(185, 0, 132)',
   'Video Games': 'rgb(104, 0, 201)',
   };
@@ -75,7 +77,8 @@ export default function Feed() {
   Outdoors: 'rgb(125, 238, 255)',
   Plants: 'rgb(210, 255, 121)',
   Productivity: 'rgb(134, 123, 255)',
-  Professional: 'rgb(70, 130, 180)',
+  Professional: 'rgb(118, 193, 255)',
+  Sports: 'rgb(255, 175, 84)',
   Vibes: 'rgb(255, 118, 216)',
   'Video Games': 'rgb(185, 109, 255)',
   };
