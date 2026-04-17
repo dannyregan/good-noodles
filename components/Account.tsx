@@ -262,38 +262,28 @@ export default function Account({ userId: propUserId }: AccountProps) {
 
           <View style={{ alignItems: 'center', }}>
             <View style={[styles.avatar, {alignItems: 'center', justifyContent: 'center', height: bannerHeight, position: 'absolute'}]}><Text style={{color: 'white'}}>Loading Profile Photo...</Text></View>
-            <View style={[styles.bannerImage, { alignItems: 'center', width: screenWidth, height: bannerHeight }]}>
-              <Image
-                source={{ uri: uri ?? photoPath ?? smallPhotoPath }}
-                style={[styles.avatar, { height: bannerHeight }]}
-                resizeMode="cover"
-              />
-              {/* {!loading ? (
+            <View style={[{ alignItems: 'center', justifyContent: 'center', width: screenWidth, height: bannerHeight }]}>
+              <View
+                style={[
+                    styles.avatar,
+                    styles.shadow,
+                    {
+                      height: 300,
+                      width: 300,
+                    }
+                  ]}
+              >
                 <Image
-                  source={{ uri: uri || photoPath }}
-                  style={[styles.avatar, {height: bannerHeight}]}
+                  source={{ uri: uri ?? photoPath ?? smallPhotoPath }}
+                  style={[
+                    styles.avatar,
+                    styles.profilePic,
+                    styles.pinkBorder,
+                  ]}
                   resizeMode="cover"
-                />) : (
-                <Image
-                  source={{ uri: smallPhotoPath || avatarUrl}}
-                  style={[styles.avatar, {height: bannerHeight}]}
-                  resizeMode="cover"
-                />)} */}
-            
-
-                <LinearGradient
-                  colors={['rgba(10,10,10,0)', 'rgba(10,10,10,.5)', 'rgba(10,10,10,.9)', 'rgba(10,10,10,1)']}
-                  locations={[.7, .8, .9, 1]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: screenWidth,
-                    height: bannerHeight
-                  }}
                 />
+              </View>
+                
                 {session?.user.id === userId && (
                     <>
                     <View style={{ position: 'absolute', top: 547, right: 20, borderRadius: 10, zIndex: 999}} >
@@ -452,11 +442,15 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
     alignSelf: 'stretch',
   },
-  bannerImage: {
-
-  },
   avatar: {
     width: '100%',
+
+  },
+  profilePic: {
+    height: 300,
+    width: 300,
+    borderRadius: 10,
+    borderWidth: 4,
   },
   name: {
     fontSize: 20,
@@ -495,5 +489,19 @@ const styles = StyleSheet.create({
   },
   bold: {
     fontWeight: 'bold'
+  },
+  pinkBorder: {
+    borderColor: 'rgba(255,30,192,0.9)',
+  },
+  border: {
+    borderWidth: 1,
+    borderColor: 'red'
+  },
+  shadow: {
+    shadowColor: '#ff1ec0',
+    shadowOpacity: 0.8,
+    shadowRadius: 60,
+    shadowOffset: { width: 0, height: 0},
+    elevation: 6, // for Android glow
   }
 })

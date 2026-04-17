@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { Alert, StyleSheet, View, AppState, TextInput, TouchableOpacity, Text } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Linking from 'expo-linking';
 
 // Auto-refresh Supabase session when app comes to foreground
 AppState.addEventListener('change', (state) => {
@@ -40,7 +41,10 @@ export default function Auth() {
       return
     }
     setLoading(true)
-    const { error } = await supabase.auth.resetPasswordForEmail(email)
+    const redirectTo = Linking.createURL('reset-password')
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo
+    })
     if (error) {
       Alert.alert(error.message)
     } else {
